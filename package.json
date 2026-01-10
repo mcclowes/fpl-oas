@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:spec": "omg build api.omg.md -o public/openapi.yaml",
-    "lint": "omg lint api.omg.md",
+    "lint": "omg lint endpoints/",
     "preview": "vite preview"
   },
   "devDependencies": {
