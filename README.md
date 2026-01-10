@@ -18,23 +18,23 @@ Base URL: `https://fantasy.premierleague.com/api/`
 
 | Endpoint | Description |
 |----------|-------------|
-| `/bootstrap-static/` | Core game data (players, teams, gameweeks) |
-| `/fixtures/` | Match fixtures and results |
-| `/element-summary/{element_id}/` | Individual player details |
-| `/event/{event_id}/live/` | Live gameweek data |
-| `/entry/{manager_id}/` | Manager profile |
-| `/entry/{manager_id}/history/` | Manager history |
-| `/entry/{manager_id}/transfers/` | Manager transfers |
-| `/entry/{manager_id}/event/{event_id}/picks/` | Manager gameweek picks |
-| `/leagues-classic/{league_id}/standings/` | Classic league standings |
-| `/leagues-h2h-matches/league/{league_id}/` | H2H league matches |
-| `/event-status/` | Gameweek status |
-| `/dream-team/{event_id}/` | Dream team for gameweek |
-| `/team/set-piece-notes/` | Set piece taker info |
-| `/my-team/{manager_id}/` | Authenticated user's team |
-| `/me/` | Authenticated user profile |
-| `/stats/most-valuable-teams/` | Most valuable teams |
-| `/league/{league_id}/cup-status/` | League cup status |
+| [`/bootstrap-static/`](endpoints/bootstrap-static.omg.md) | Core game data (players, teams, gameweeks) |
+| [`/fixtures/`](endpoints/fixtures.omg.md) | Match fixtures and results |
+| [`/element-summary/{element_id}/`](endpoints/element-summary.omg.md) | Individual player details |
+| [`/event/{event_id}/live/`](endpoints/event-live.omg.md) | Live gameweek data |
+| [`/entry/{manager_id}/`](endpoints/entry.omg.md) | Manager profile |
+| [`/entry/{manager_id}/history/`](endpoints/entry-history.omg.md) | Manager history |
+| [`/entry/{manager_id}/transfers/`](endpoints/entry-transfers.omg.md) | Manager transfers |
+| [`/entry/{manager_id}/event/{event_id}/picks/`](endpoints/entry-picks.omg.md) | Manager gameweek picks |
+| [`/leagues-classic/{league_id}/standings/`](endpoints/leagues-classic.omg.md) | Classic league standings |
+| [`/leagues-h2h-matches/league/{league_id}/`](endpoints/leagues-h2h.omg.md) | H2H league matches |
+| [`/event-status/`](endpoints/event-status.omg.md) | Gameweek status |
+| [`/dream-team/{event_id}/`](endpoints/dream-team.omg.md) | Dream team for gameweek |
+| [`/team/set-piece-notes/`](endpoints/set-piece-notes.omg.md) | Set piece taker info |
+| [`/my-team/{manager_id}/`](endpoints/my-team.omg.md) | Authenticated user's team |
+| [`/me/`](endpoints/me.omg.md) | Authenticated user profile |
+| [`/stats/most-valuable-teams/`](endpoints/most-valuable-teams.omg.md) | Most valuable teams |
+| [`/league/{league_id}/cup-status/`](endpoints/cup-status.omg.md) | League cup status |
 
 ## Local development
 
