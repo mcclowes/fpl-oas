@@ -20,21 +20,21 @@ Base URL: `https://fantasy.premierleague.com/api/`
 |----------|-------------|
 | `/bootstrap-static/` | Core game data (players, teams, gameweeks) |
 | `/fixtures/` | Match fixtures and results |
-| `/element-summary/{id}/` | Individual player details |
-| `/event/{id}/live/` | Live gameweek data |
-| `/entry/{id}/` | Manager profile |
-| `/entry/{id}/history/` | Manager history |
-| `/entry/{id}/transfers/` | Manager transfers |
-| `/entry/{id}/event/{id}/picks/` | Manager gameweek picks |
-| `/leagues-classic/{id}/standings/` | Classic league standings |
-| `/leagues-h2h-matches/league/{id}/` | H2H league matches |
+| `/element-summary/{element_id}/` | Individual player details |
+| `/event/{event_id}/live/` | Live gameweek data |
+| `/entry/{manager_id}/` | Manager profile |
+| `/entry/{manager_id}/history/` | Manager history |
+| `/entry/{manager_id}/transfers/` | Manager transfers |
+| `/entry/{manager_id}/event/{event_id}/picks/` | Manager gameweek picks |
+| `/leagues-classic/{league_id}/standings/` | Classic league standings |
+| `/leagues-h2h-matches/league/{league_id}/` | H2H league matches |
 | `/event-status/` | Gameweek status |
-| `/dream-team/{id}/` | Dream team for gameweek |
+| `/dream-team/{event_id}/` | Dream team for gameweek |
 | `/team/set-piece-notes/` | Set piece taker info |
-| `/my-team/{id}/` | Authenticated user's team |
+| `/my-team/{manager_id}/` | Authenticated user's team |
 | `/me/` | Authenticated user profile |
 | `/stats/most-valuable-teams/` | Most valuable teams |
-| `/league/{id}/cup-status/` | League cup status |
+| `/league/{league_id}/cup-status/` | League cup status |
 
 ## Local development
 
@@ -94,9 +94,11 @@ fpl-oas/
 │   ├── Player.omg.md
 │   ├── Team.omg.md
 │   └── ...
-├── dist/                # Built output
+├── public/
+│   └── index.html       # Scalar documentation template
+├── dist/                # Built output (gitignored)
 │   ├── openapi.yaml     # Generated OpenAPI spec
-│   └── index.html       # Scalar documentation
+│   └── index.html       # Copied from public/
 └── package.json
 ```
 

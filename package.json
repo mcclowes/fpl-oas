@@ -1,18 +1,27 @@
 {
   "name": "fpl-api-docs",
   "version": "1.0.0",
-  "description": "Fantasy Premier League API documentation using OMG",
+  "description": "Fantasy Premier League API documentation",
+  "type": "module",
   "scripts": {
-    "build": "omg build api.omg.md -o dist/openapi.yaml",
-    "build:json": "omg build api.omg.md -o dist/openapi.json",
+    "dev": "vite",
+    "build": "vite build",
+    "build:spec": "omg build api.omg.md -o public/openapi.yaml",
     "lint": "omg lint api.omg.md",
-    "preview": "npx @scalar/cli preview dist/openapi.yaml",
-    "serve": "npx serve dist"
+    "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
     "omg-md-cli": "^0.1.0",
-    "@scalar/cli": "^0.2.0",
-    "serve": "^14.2.0"
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@scalar/api-reference-react": "^0.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "keywords": [
     "fpl",
