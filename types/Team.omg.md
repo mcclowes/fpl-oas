@@ -1,5 +1,4 @@
 ---
-$id: Team
 ---
 
 # Team
@@ -7,7 +6,7 @@ $id: Team
 A Premier League team/club.
 
 ```omg.type
-Team: {
+type Team = {
   id: integer @description("Unique team identifier"),
   code: integer @description("Internal team code"),
   name: string @description("Full team name"),

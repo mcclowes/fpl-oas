@@ -1,5 +1,4 @@
 ---
-$id: Player
 ---
 
 # Player (Element)
@@ -7,7 +6,7 @@ $id: Player
 A player in the Fantasy Premier League, also referred to as an "element" in the API.
 
 ```omg.type
-Player: {
+type Player = {
   id: integer,
   code: integer,
   first_name: string,

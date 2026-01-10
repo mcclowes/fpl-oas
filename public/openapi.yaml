@@ -1,1654 +1,2534 @@
-openapi: 3.1.0
+openapi: "3.1.0"
 info:
-  title: Fantasy Premier League API
-  version: 2025.1.0
-  description: |
-    Unofficial documentation for the Fantasy Premier League (FPL) API.
+  title: "Fantasy Premier League API"
+  version: "2025.1.0"
+  description: "The official Fantasy Premier League game API provides comprehensive data about the English Premier League fantasy football game.
 
-    The FPL API provides access to player statistics, team data, gameweek information,
-    manager details, league standings, and more for the official Fantasy Premier League game.
 
-    **Note:** This is an unofficial, community-documented API. The Premier League does not
-    provide official API documentation, and endpoints may change without notice.
-  contact:
-    name: FPL API Docs
-    url: https://github.com/mcclowes/fpl-api-docs
-servers:
-  - url: https://fantasy.premierleague.com/api
-    description: Production FPL API
-tags:
-  - name: General
-    description: Core game data and bootstrap information
-  - name: Players
-    description: Player statistics and summaries
-  - name: Fixtures
-    description: Match fixtures and results
-  - name: Managers
-    description: Manager/team owner data and history
-  - name: Leagues
-    description: League standings and competitions
-  - name: Live
-    description: Live gameweek data
-  - name: Stats
-    description: Game statistics and leaderboards
+    ## Base URL
 
+
+    All endpoints use the base URL: `https://fantasy.premierleague.com/api/`
+
+
+    ## Authentication
+
+
+    Most endpoints are publicly accessible. Some endpoints (marked with a lock icon) require authentication via session cookies obtained by logging into the FPL website.
+
+
+    ## Rate Limiting
+
+
+    The API does not publish official rate limits, but excessive requests may result in temporary blocks. Please be respectful of the service."
 paths:
   /bootstrap-static/:
     get:
-      operationId: getBootstrapStatic
-      tags: [General]
-      summary: Get bootstrap static data
-      description: |
-        Returns comprehensive static data for the current FPL season, including all players, teams, gameweeks, game settings, and more.
+      operationId: "getBootstrapStatic"
+      summary: "Get bootstrap static data"
+      description: "Returns comprehensive static data for the current FPL season, including all players, teams, gameweeks, game settings, and more. This is the primary endpoint for initial data loading.
 
-        This is the primary endpoint for initial data loading and provides everything needed to render the main FPL interface.
+
+        This endpoint provides everything needed to render the main FPL interface and should be cached appropriately as it contains a large payload."
+      tags:
+        - "General"
       responses:
-        '200':
-          description: Successful response
+        "200":
+          description: "Success"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BootstrapStatic'
-
-  /fixtures/:
-    get:
-      operationId: getFixtures
-      tags: [Fixtures]
-      summary: Get all fixtures
-      description: Returns all fixtures for the current season. Past fixtures include scores and detailed statistics.
-      parameters:
-        - name: event
-          in: query
-          description: Filter by gameweek number
-          schema:
-            type: integer
-        - name: future
-          in: query
-          description: Set to 1 to only return future fixtures
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Fixture'
-
-  /element-summary/{element_id}/:
-    get:
-      operationId: getElementSummary
-      tags: [Players]
-      summary: Get player summary
-      description: Returns detailed information about a specific player, including fixture history, upcoming fixtures, and previous season statistics.
-      parameters:
-        - name: element_id
-          in: path
-          required: true
-          description: Player ID
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ElementSummary'
-
-  /event/{event_id}/live/:
-    get:
-      operationId: getEventLive
-      tags: [Live]
-      summary: Get live gameweek data
-      description: Returns live points and statistics for all players in a specific gameweek. Updates throughout matches.
-      parameters:
-        - name: event_id
-          in: path
-          required: true
-          description: Gameweek number (1-38)
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 38
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventLive'
-
-  /entry/{manager_id}/:
-    get:
-      operationId: getEntry
-      tags: [Managers]
-      summary: Get manager details
-      description: Returns detailed information about a specific FPL manager, including overall statistics and league memberships.
-      parameters:
-        - name: manager_id
-          in: path
-          required: true
-          description: Manager/entry ID
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Manager'
-
-  /entry/{manager_id}/history/:
-    get:
-      operationId: getEntryHistory
-      tags: [Managers]
-      summary: Get manager history
-      description: Returns a manager's historical performance data including gameweek scores, chip usage, and previous season rankings.
-      parameters:
-        - name: manager_id
-          in: path
-          required: true
-          description: Manager/entry ID
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ManagerHistory'
-
-  /entry/{manager_id}/transfers/:
-    get:
-      operationId: getEntryTransfers
-      tags: [Managers]
-      summary: Get manager transfers
-      description: Returns all transfers made by a manager in the current season.
-      parameters:
-        - name: manager_id
-          in: path
-          required: true
-          description: Manager/entry ID
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Transfer'
-
-  /entry/{manager_id}/event/{event_id}/picks/:
-    get:
-      operationId: getEntryPicks
-      tags: [Managers]
-      summary: Get manager gameweek picks
-      description: Returns a manager's team selection for a specific gameweek, including captain choice, bench order, and active chips.
-      parameters:
-        - name: manager_id
-          in: path
-          required: true
-          description: Manager/entry ID
-          schema:
-            type: integer
-        - name: event_id
-          in: path
-          required: true
-          description: Gameweek number (1-38)
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ManagerPicks'
-
-  /leagues-classic/{league_id}/standings/:
-    get:
-      operationId: getLeagueClassicStandings
-      tags: [Leagues]
-      summary: Get classic league standings
-      description: Returns standings for a classic scoring league, including manager rankings and points.
-      parameters:
-        - name: league_id
-          in: path
-          required: true
-          description: Classic league ID
-          schema:
-            type: integer
-        - name: page_standings
-          in: query
-          description: Page number for pagination
-          schema:
-            type: integer
-            minimum: 1
-        - name: page_new_entries
-          in: query
-          description: Page number for new entries
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LeagueClassicStandings'
-
-  /leagues-h2h-matches/league/{league_id}/:
-    get:
-      operationId: getLeagueH2HMatches
-      tags: [Leagues]
-      summary: Get head-to-head league matches
-      description: Returns head-to-head matchups for a specific league.
-      parameters:
-        - name: league_id
-          in: path
-          required: true
-          description: H2H league ID
-          schema:
-            type: integer
-        - name: page
-          in: query
-          description: Page number
-          schema:
-            type: integer
-            minimum: 1
-        - name: event
-          in: query
-          description: Filter by gameweek
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LeagueH2HMatches'
-
-  /event-status/:
-    get:
-      operationId: getEventStatus
-      tags: [Live]
-      summary: Get event status
-      description: Returns the current status of bonus points and league updates for all gameweeks.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EventStatus'
-
-  /dream-team/{event_id}/:
-    get:
-      operationId: getDreamTeam
-      tags: [Stats]
-      summary: Get dream team
-      description: Returns the highest-scoring players (dream team) for a specific gameweek.
-      parameters:
-        - name: event_id
-          in: path
-          required: true
-          description: Gameweek number (1-38)
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DreamTeam'
-
-  /team/set-piece-notes/:
-    get:
-      operationId: getSetPieceNotes
-      tags: [General]
-      summary: Get set piece takers
-      description: Returns information about set piece responsibilities for each team.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SetPieceNotes'
-
-  /my-team/{manager_id}/:
-    get:
-      operationId: getMyTeam
-      tags: [Managers]
-      summary: Get my team
-      description: |
-        Returns the authenticated manager's current team, including players, chips available, and recent transfers.
-
-        **Requires authentication via FPL session cookie.**
-      security:
-        - sessionCookie: []
-      parameters:
-        - name: manager_id
-          in: path
-          required: true
-          description: Manager/entry ID
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MyTeam'
-        '401':
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                type: object
+                type: "object"
                 properties:
-                  detail:
-                    type: string
-
-  /me/:
-    get:
-      operationId: getMe
-      tags: [Managers]
-      summary: Get authenticated user
-      description: |
-        Returns profile information for the currently authenticated user.
-
-        **Requires authentication via FPL session cookie.**
-      security:
-        - sessionCookie: []
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthenticatedUser'
-        '401':
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-
-  /stats/most-valuable-teams/:
-    get:
-      operationId: getMostValuableTeams
-      tags: [Stats]
-      summary: Get most valuable teams
-      description: Returns the top 5 most valuable FPL squads by total team value.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ValuableTeam'
-
+                  events:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/Event"
+                  game_settings:
+                    type: "object"
+                    properties:
+                      league_join_private_max:
+                        type: "integer"
+                      league_join_public_max:
+                        type: "integer"
+                      league_max_size_public_classic:
+                        type: "integer"
+                      league_max_size_public_h2h:
+                        type: "integer"
+                      league_max_size_private_h2h:
+                        type: "integer"
+                      league_max_ko_rounds_private_h2h:
+                        type: "integer"
+                      league_prefix_public:
+                        type: "string"
+                      league_points_h2h_win:
+                        type: "integer"
+                      league_points_h2h_lose:
+                        type: "integer"
+                      league_points_h2h_draw:
+                        type: "integer"
+                      league_ko_first_instead_of_random:
+                        type: "boolean"
+                      cup_start_event_id:
+                        type: "integer"
+                      cup_stop_event_id:
+                        type: "integer"
+                      cup_qualifying_method:
+                        type: "string"
+                      cup_type:
+                        type: "string"
+                      featured_entries:
+                        type: "array"
+                        items:
+                          type: "integer"
+                      percentile_ranks:
+                        type: "array"
+                        items:
+                          type: "integer"
+                      squad_squadplay:
+                        type: "integer"
+                      squad_squadsize:
+                        type: "integer"
+                      squad_team_limit:
+                        type: "integer"
+                      squad_total_spend:
+                        type: "integer"
+                      ui_currency_multiplier:
+                        type: "integer"
+                      ui_use_special_shirts:
+                        type: "boolean"
+                      stats_form_days:
+                        type: "integer"
+                      sys_vice_captain_enabled:
+                        type: "boolean"
+                      transfers_cap:
+                        type: "integer"
+                      transfers_sell_on_fee:
+                        type: "number"
+                      max_extra_free_transfers:
+                        type: "integer"
+                      timezone:
+                        type: "string"
+                    required:
+                      - "league_join_private_max"
+                      - "league_join_public_max"
+                      - "league_max_size_public_classic"
+                      - "league_max_size_public_h2h"
+                      - "league_max_size_private_h2h"
+                      - "league_max_ko_rounds_private_h2h"
+                      - "league_prefix_public"
+                      - "league_points_h2h_win"
+                      - "league_points_h2h_lose"
+                      - "league_points_h2h_draw"
+                      - "league_ko_first_instead_of_random"
+                      - "featured_entries"
+                      - "percentile_ranks"
+                      - "squad_squadplay"
+                      - "squad_squadsize"
+                      - "squad_team_limit"
+                      - "squad_total_spend"
+                      - "ui_currency_multiplier"
+                      - "ui_use_special_shirts"
+                      - "stats_form_days"
+                      - "sys_vice_captain_enabled"
+                      - "transfers_cap"
+                      - "transfers_sell_on_fee"
+                      - "max_extra_free_transfers"
+                      - "timezone"
+                  phases:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetBootstrapStaticResponse200Phase"
+                  teams:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/Team"
+                  total_players:
+                    type: "integer"
+                  elements:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/Player"
+                  element_stats:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetBootstrapStaticResponse200Elementstat"
+                  element_types:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/ElementType"
+                  chips:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/Chip"
+                required:
+                  - "events"
+                  - "game_settings"
+                  - "phases"
+                  - "teams"
+                  - "total_players"
+                  - "elements"
+                  - "element_stats"
+                  - "element_types"
+                  - "chips"
+              example:
+                events:
+                  - id: 1
+                    name: "Gameweek 1"
+                    deadline_time: "2025-08-15T17:30:00Z"
+                    average_entry_score: 54
+                    finished: true
+                    is_current: false
+                teams:
+                  - id: 1
+                    name: "Arsenal"
+                    short_name: "ARS"
+                    strength: 5
+                total_players: 12802828
   /league/{league_id}/cup-status/:
     get:
-      operationId: getCupStatus
-      tags: [Leagues]
-      summary: Get league cup status
-      description: Returns the cup competition status for a specific league.
-      parameters:
-        - name: league_id
-          in: path
-          required: true
-          description: League ID
-          schema:
-            type: integer
+      operationId: "getCupStatus"
+      summary: "Get league cup status"
+      description: "Returns the cup competition status for a specific league."
+      tags:
+        - "Leagues"
       responses:
-        '200':
-          description: Successful response
+        "200":
+          description: "Success"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CupStatus'
+                type: "object"
+                properties:
+                  qualification_event:
+                    type: "integer"
+                  qualification_numbers:
+                    type: "integer"
+                  qualification_rank:
+                    type: "integer"
+                  qualification_state:
+                    type: "string"
+      parameters:
+        - name: "league_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /dream-team/{event_id}/:
+    get:
+      operationId: "getDreamTeam"
+      summary: "Get dream team"
+      description: "Returns the highest-scoring players (dream team) for a specific gameweek."
+      tags:
+        - "Stats"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  top_player:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "integer"
+                      points:
+                        type: "integer"
+                    required:
+                      - "id"
+                      - "points"
+                  team:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetDreamTeamResponse200Team"
+                required:
+                  - "top_player"
+                  - "team"
+              example:
+                top_player:
+                  id: 351
+                  points: 21
+                team:
+                  - element: 1
+                    points: 12
+                    position: 1
+                  - element: 45
+                    points: 15
+                    position: 2
+                  - element: 351
+                    points: 21
+                    position: 8
+      parameters:
+        - name: "event_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /element-summary/{element_id}/:
+    get:
+      operationId: "getElementSummary"
+      summary: "Get player summary"
+      description: "Returns detailed information about a specific player, including their fixture history, upcoming fixtures, and previous season statistics."
+      tags:
+        - "Players"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  fixtures:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetElementSummaryResponse200Fixture"
+                  history:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetElementSummaryResponse200History"
+                  history_past:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetElementSummaryResponse200Historypast"
+                required:
+                  - "fixtures"
+                  - "history"
+                  - "history_past"
+      parameters:
+        - name: "element_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /entry/{manager_id}/history/:
+    get:
+      operationId: "getEntryHistory"
+      summary: "Get manager history"
+      description: "Returns a manager's historical performance data including gameweek scores, chip usage, and previous season rankings."
+      tags:
+        - "Managers"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  current:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetEntryHistoryResponse200Current"
+                  past:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetEntryHistoryResponse200Past"
+                  chips:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetEntryHistoryResponse200Chip"
+                required:
+                  - "current"
+                  - "past"
+                  - "chips"
+      parameters:
+        - name: "manager_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /entry/{manager_id}/event/{event_id}/picks/:
+    get:
+      operationId: "getEntryPicks"
+      summary: "Get manager gameweek picks"
+      description: "Returns a manager's team selection for a specific gameweek, including captain choice, bench order, and active chips."
+      tags:
+        - "Managers"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  active_chip:
+                    type: "string"
+                  automatic_subs:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetEntryPicksResponse200Automaticsub"
+                  entry_history:
+                    type: "object"
+                    properties:
+                      event:
+                        type: "integer"
+                      points:
+                        type: "integer"
+                      total_points:
+                        type: "integer"
+                      rank:
+                        type: "integer"
+                      rank_sort:
+                        type: "integer"
+                      overall_rank:
+                        type: "integer"
+                      percentile_rank:
+                        type: "integer"
+                      bank:
+                        type: "integer"
+                      value:
+                        type: "integer"
+                      event_transfers:
+                        type: "integer"
+                      event_transfers_cost:
+                        type: "integer"
+                      points_on_bench:
+                        type: "integer"
+                    required:
+                      - "event"
+                      - "points"
+                      - "total_points"
+                      - "bank"
+                      - "value"
+                      - "event_transfers"
+                      - "event_transfers_cost"
+                      - "points_on_bench"
+                  picks:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetEntryPicksResponse200Pick"
+                required:
+                  - "automatic_subs"
+                  - "entry_history"
+                  - "picks"
+              example:
+                active_chip: null
+                automatic_subs: []
+                picks:
+                  - element: 1
+                    position: 1
+                    multiplier: 1
+                    is_captain: false
+                    is_vice_captain: false
+                  - element: 351
+                    position: 2
+                    multiplier: 2
+                    is_captain: true
+                    is_vice_captain: false
+      parameters:
+        - name: "manager_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+        - name: "event_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /entry/{manager_id}/transfers/:
+    get:
+      operationId: "getEntryTransfers"
+      summary: "Get manager transfers"
+      description: "Returns all transfers made by a manager in the current season."
+      tags:
+        - "Managers"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    element_in:
+                      type: "integer"
+                    element_in_cost:
+                      type: "integer"
+                    element_out:
+                      type: "integer"
+                    element_out_cost:
+                      type: "integer"
+                    entry:
+                      type: "integer"
+                    event:
+                      type: "integer"
+                    time:
+                      format: "date-time"
+                      type: "string"
+                  required:
+                    - "element_in"
+                    - "element_in_cost"
+                    - "element_out"
+                    - "element_out_cost"
+                    - "entry"
+                    - "event"
+                    - "time"
+              example:
+                - element_in: 351
+                  element_in_cost: 115
+                  element_out: 233
+                  element_out_cost: 65
+                  entry: 1234567
+                  event: 5
+                  time: "2025-09-10T12:30:00Z"
+      parameters:
+        - name: "manager_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /entry/{manager_id}/:
+    get:
+      operationId: "getEntry"
+      summary: "Get manager details"
+      description: "Returns detailed information about a specific FPL manager, including their overall statistics and league memberships."
+      tags:
+        - "Managers"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manager"
+              example:
+                id: 1234567
+                joined_time: "2020-07-01T12:00:00Z"
+                started_event: 1
+                player_first_name: "John"
+                player_last_name: "Smith"
+                player_region_name: "England"
+                summary_overall_points: 1500
+                summary_overall_rank: 50000
+                name: "FC John's Team"
+                leagues:
+                  classic: []
+                  h2h: []
+                  cup: {}
+      parameters:
+        - name: "manager_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /event/{event_id}/live/:
+    get:
+      operationId: "getEventLive"
+      summary: "Get live gameweek data"
+      description: "Returns live points and statistics for all players in a specific gameweek. This endpoint updates throughout matches."
+      tags:
+        - "Live"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  elements:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetEventLiveResponse200Element"
+                required:
+                  - "elements"
+      parameters:
+        - name: "event_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /event-status/:
+    get:
+      operationId: "getEventStatus"
+      summary: "Get event status"
+      description: "Returns the current status of bonus points and league updates for all gameweeks."
+      tags:
+        - "Live"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  status:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetEventStatusResponse200Statu"
+                  leagues:
+                    type: "string"
+                required:
+                  - "status"
+                  - "leagues"
+              example:
+                status:
+                  - bonus_added: true
+                    date: "2025-09-15"
+                    event: 4
+                    points: "r"
+                leagues: "Updated"
+  /fixtures/:
+    get:
+      operationId: "getFixtures"
+      summary: "Get all fixtures"
+      description: "Returns all fixtures for the current season. Past fixtures include scores and detailed statistics, while future fixtures contain scheduling information."
+      tags:
+        - "Fixtures"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Fixture"
+              example:
+                - id: 1
+                  event: 1
+                  team_h: 1
+                  team_a: 10
+                  team_h_score: 2
+                  team_a_score: 0
+                  kickoff_time: "2025-08-16T11:30:00Z"
+                  finished: true
+                  stats:
+                    - identifier: "goals_scored"
+                      h:
+                        - value: 1
+                          element: 351
+                      a: []
+      parameters:
+        - name: "event"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+        - name: "future"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+  /leagues-classic/{league_id}/standings/:
+    get:
+      operationId: "getLeagueClassicStandings"
+      summary: "Get classic league standings"
+      description: "Returns standings for a classic scoring league, including manager rankings and points."
+      tags:
+        - "Leagues"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  new_entries:
+                    type: "object"
+                    properties:
+                      has_next:
+                        type: "boolean"
+                      page:
+                        type: "integer"
+                      results:
+                        type: "array"
+                        items:
+                          $ref: "#/components/schemas/GetLeagueClassicStandingsResponse200NewentriesResult"
+                    required:
+                      - "has_next"
+                      - "page"
+                      - "results"
+                  last_updated_data:
+                    format: "date-time"
+                    type: "string"
+                  league:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "integer"
+                      name:
+                        type: "string"
+                      created:
+                        format: "date-time"
+                        type: "string"
+                      closed:
+                        type: "boolean"
+                      max_entries:
+                        type: "integer"
+                      league_type:
+                        type: "string"
+                        enum:
+                          - "x"
+                          - "s"
+                          - "c"
+                      scoring:
+                        type: "string"
+                        enum:
+                          - "c"
+                          - "h"
+                      admin_entry:
+                        type: "integer"
+                      start_event:
+                        type: "integer"
+                      code_privacy:
+                        type: "string"
+                        enum:
+                          - "p"
+                          - "a"
+                      has_cup:
+                        type: "boolean"
+                      cup_league:
+                        type: "integer"
+                      rank:
+                        type: "integer"
+                    required:
+                      - "id"
+                      - "name"
+                      - "created"
+                      - "closed"
+                      - "league_type"
+                      - "scoring"
+                      - "start_event"
+                      - "code_privacy"
+                      - "has_cup"
+                  standings:
+                    type: "object"
+                    properties:
+                      has_next:
+                        type: "boolean"
+                      page:
+                        type: "integer"
+                      results:
+                        type: "array"
+                        items:
+                          $ref: "#/components/schemas/GetLeagueClassicStandingsResponse200StandingsResult"
+                    required:
+                      - "has_next"
+                      - "page"
+                      - "results"
+                required:
+                  - "new_entries"
+                  - "last_updated_data"
+                  - "league"
+                  - "standings"
+      parameters:
+        - name: "league_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+        - name: "page_standings"
+          in: "query"
+          required: false
+          schema:
+            minimum: 1
+            type: "integer"
+        - name: "page_new_entries"
+          in: "query"
+          required: false
+          schema:
+            minimum: 1
+            type: "integer"
+  /leagues-h2h-matches/league/{league_id}/:
+    get:
+      operationId: "getLeagueH2HMatches"
+      summary: "Get head-to-head league matches"
+      description: "Returns head-to-head matchups for a specific league."
+      tags:
+        - "Leagues"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  has_next:
+                    type: "boolean"
+                  page:
+                    type: "integer"
+                  results:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetLeagueH2HMatchesResponse200Result"
+                required:
+                  - "has_next"
+                  - "page"
+                  - "results"
+      parameters:
+        - name: "league_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+        - name: "page"
+          in: "query"
+          required: false
+          schema:
+            minimum: 1
+            type: "integer"
+        - name: "event"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+  /me/:
+    get:
+      operationId: "getMe"
+      summary: "Get authenticated user"
+      description: "Returns profile information for the currently authenticated user.
 
+
+        **Requires authentication via FPL session cookie.**"
+      tags:
+        - "Managers"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  player:
+                    type: "object"
+                    properties:
+                      date_of_birth:
+                        type: "string"
+                      dirty:
+                        type: "boolean"
+                      first_name:
+                        type: "string"
+                      gender:
+                        type: "string"
+                      id:
+                        type: "integer"
+                      last_name:
+                        type: "string"
+                      region:
+                        type: "integer"
+                      email:
+                        type: "string"
+                      entry:
+                        type: "integer"
+                      entry_email:
+                        type: "boolean"
+                    required:
+                      - "dirty"
+                      - "first_name"
+                      - "id"
+                      - "last_name"
+                      - "region"
+                      - "email"
+                      - "entry"
+                      - "entry_email"
+                required:
+                  - "player"
+              example:
+                player:
+                  first_name: "John"
+                  last_name: "Smith"
+                  id: 9876543
+                  region: 80
+                  email: "john@example.com"
+                  entry: 1234567
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  detail:
+                    type: "string"
+                required:
+                  - "detail"
+      security:
+        - session: []
+  /stats/most-valuable-teams/:
+    get:
+      operationId: "getMostValuableTeams"
+      summary: "Get most valuable teams"
+      description: "Returns the top 5 most valuable FPL squads by total team value."
+      tags:
+        - "Stats"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "integer"
+                    name:
+                      type: "string"
+                    manager:
+                      type: "string"
+                    value:
+                      type: "integer"
+                  required:
+                    - "id"
+                    - "name"
+                    - "manager"
+                    - "value"
+              example:
+                - id: 1234567
+                  name: "Expensive FC"
+                  manager: "Rich Manager"
+                  value: 1150
+  /my-team/{manager_id}/:
+    get:
+      operationId: "getMyTeam"
+      summary: "Get my team"
+      description: "Returns the authenticated manager's current team, including players, chips available, and recent transfers.
+
+
+        **Requires authentication via FPL session cookie.**"
+      tags:
+        - "Managers"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  picks:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetMyTeamResponse200Pick"
+                  chips:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetMyTeamResponse200Chip"
+                  transfers:
+                    type: "object"
+                    properties:
+                      cost:
+                        type: "integer"
+                      status:
+                        type: "string"
+                        enum:
+                          - "cost"
+                          - "free"
+                      limit:
+                        type: "integer"
+                      made:
+                        type: "integer"
+                      bank:
+                        type: "integer"
+                      value:
+                        type: "integer"
+                    required:
+                      - "cost"
+                      - "status"
+                      - "made"
+                      - "bank"
+                      - "value"
+                required:
+                  - "picks"
+                  - "chips"
+                  - "transfers"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  detail:
+                    type: "string"
+                required:
+                  - "detail"
+      security:
+        - session: []
+      parameters:
+        - name: "manager_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /team/set-piece-notes/:
+    get:
+      operationId: "getSetPieceNotes"
+      summary: "Get set piece takers"
+      description: "Returns information about set piece responsibilities for each team, including penalty takers, corner takers, and free kick specialists."
+      tags:
+        - "General"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  teams:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetSetPieceNotesResponse200Team"
+                required:
+                  - "teams"
+              example:
+                teams:
+                  - id: 1
+                    notes:
+                      - external_link: false
+                        info_message: "Saka takes corners from the right, Martinelli from the left."
+                        source_link: null
 components:
-  securitySchemes:
-    sessionCookie:
-      type: apiKey
-      in: cookie
-      name: sessionid
-      description: FPL session cookie obtained by logging into fantasy.premierleague.com
-
   schemas:
-    Player:
-      type: object
-      description: A player in the Fantasy Premier League
+    ChipOverrides:
+      type: "object"
       properties:
-        id:
-          type: integer
-          description: Unique player identifier
-        code:
-          type: integer
-          description: External player code
-        first_name:
-          type: string
-        second_name:
-          type: string
-        web_name:
-          type: string
-          description: Display name used in FPL
-        team:
-          type: integer
-          description: Team ID
-        team_code:
-          type: integer
-        element_type:
-          type: integer
-          description: "Position: 1=GKP, 2=DEF, 3=MID, 4=FWD"
-        status:
-          type: string
-          enum: [a, d, i, n, s, u]
-          description: "a=available, d=doubtful, i=injured, n=not available, s=suspended, u=unavailable"
-        now_cost:
-          type: integer
-          description: Current price in 0.1m units (e.g., 100 = 10.0m)
-        news:
-          type: string
-          description: Injury/availability news
-        news_added:
-          type: string
-          format: date-time
-          nullable: true
-        chance_of_playing_next_round:
-          type: integer
-          nullable: true
-        chance_of_playing_this_round:
-          type: integer
-          nullable: true
-        selected_by_percent:
-          type: string
-          description: Percentage of managers who own this player
-        form:
-          type: string
-          description: Recent form rating
-        points_per_game:
-          type: string
-        ep_this:
-          type: string
-          nullable: true
-          description: Expected points this gameweek
-        ep_next:
-          type: string
-          nullable: true
-          description: Expected points next gameweek
-        total_points:
-          type: integer
-          description: Total FPL points this season
-        event_points:
-          type: integer
-          description: Points in current gameweek
-        transfers_in:
-          type: integer
-        transfers_out:
-          type: integer
-        transfers_in_event:
-          type: integer
-        transfers_out_event:
-          type: integer
-        minutes:
-          type: integer
-        goals_scored:
-          type: integer
-        assists:
-          type: integer
-        clean_sheets:
-          type: integer
-        goals_conceded:
-          type: integer
-        own_goals:
-          type: integer
-        penalties_saved:
-          type: integer
-        penalties_missed:
-          type: integer
-        yellow_cards:
-          type: integer
-        red_cards:
-          type: integer
-        saves:
-          type: integer
-        bonus:
-          type: integer
-        bps:
-          type: integer
-          description: Bonus Points System score
-        influence:
-          type: string
-        creativity:
-          type: string
-        threat:
-          type: string
-        ict_index:
-          type: string
-          description: ICT Index combining influence, creativity, and threat
-        expected_goals:
-          type: string
-        expected_assists:
-          type: string
-        expected_goal_involvements:
-          type: string
-        expected_goals_conceded:
-          type: string
-      example:
-        id: 328
-        code: 223094
-        first_name: Erling
-        second_name: Haaland
-        web_name: Haaland
-        team: 11
-        team_code: 43
-        element_type: 4
-        status: a
-        now_cost: 150
-        news: ""
-        news_added: null
-        chance_of_playing_next_round: null
-        chance_of_playing_this_round: null
-        selected_by_percent: "52.3"
-        form: "8.5"
-        points_per_game: "7.2"
-        ep_this: "6.8"
-        ep_next: "7.1"
-        total_points: 158
-        event_points: 13
-        transfers_in: 2145678
-        transfers_out: 876543
-        transfers_in_event: 45678
-        transfers_out_event: 12345
-        minutes: 1890
-        goals_scored: 22
-        assists: 5
-        clean_sheets: 0
-        goals_conceded: 0
-        own_goals: 0
-        penalties_saved: 0
-        penalties_missed: 1
-        yellow_cards: 2
-        red_cards: 0
-        saves: 0
-        bonus: 24
-        bps: 567
-        influence: "823.4"
-        creativity: "156.2"
-        threat: "1245.0"
-        ict_index: "222.5"
-        expected_goals: "19.85"
-        expected_assists: "3.12"
-        expected_goal_involvements: "22.97"
-        expected_goals_conceded: "0.00"
-
-    Team:
-      type: object
-      description: A Premier League team
-      properties:
-        id:
-          type: integer
-          description: Unique team identifier
-        code:
-          type: integer
-          description: Internal team code
-        name:
-          type: string
-          description: Full team name
-        short_name:
-          type: string
-          minLength: 3
-          maxLength: 3
-          description: 3-letter abbreviation
-        strength:
-          type: integer
-          minimum: 1
-          maximum: 5
-          description: Overall team strength rating
-        position:
-          type: integer
-          description: Current league position
-        played:
-          type: integer
-        win:
-          type: integer
-        draw:
-          type: integer
-        loss:
-          type: integer
-        points:
-          type: integer
-          description: League points
-        form:
-          type: string
-          nullable: true
-        unavailable:
-          type: boolean
-        strength_overall_home:
-          type: integer
-        strength_overall_away:
-          type: integer
-        strength_attack_home:
-          type: integer
-        strength_attack_away:
-          type: integer
-        strength_defence_home:
-          type: integer
-        strength_defence_away:
-          type: integer
-        pulse_id:
-          type: integer
-      example:
-        id: 1
-        code: 3
-        name: Arsenal
-        short_name: ARS
-        strength: 4
-        position: 2
-        played: 21
-        win: 14
-        draw: 5
-        loss: 2
-        points: 47
-        form: "WWDWL"
-        unavailable: false
-        strength_overall_home: 1330
-        strength_overall_away: 1340
-        strength_attack_home: 1310
-        strength_attack_away: 1350
-        strength_defence_home: 1320
-        strength_defence_away: 1290
-        pulse_id: 1
-
-    Event:
-      type: object
-      description: A gameweek in the FPL season
-      properties:
-        id:
-          type: integer
-          description: Gameweek number
-        name:
-          type: string
-          description: "Display name (e.g., 'Gameweek 1')"
-        deadline_time:
-          type: string
-          format: date-time
-          description: ISO 8601 deadline timestamp
-        deadline_time_epoch:
-          type: integer
-          description: Unix timestamp of deadline
-        average_entry_score:
-          type: integer
-          description: Average points scored by all managers
-        finished:
-          type: boolean
-          description: Whether gameweek has finished
-        data_checked:
-          type: boolean
-        highest_scoring_entry:
-          type: integer
-          nullable: true
-          description: Manager ID with highest score
-        highest_score:
-          type: integer
-          nullable: true
-        is_previous:
-          type: boolean
-        is_current:
-          type: boolean
-        is_next:
-          type: boolean
-        can_enter:
-          type: boolean
-        can_manage:
-          type: boolean
-        released:
-          type: boolean
-        ranked_count:
-          type: integer
-        chip_plays:
-          type: array
-          items:
-            type: object
-            properties:
-              chip_name:
-                type: string
-              num_played:
-                type: integer
-        most_selected:
-          type: integer
-          nullable: true
-        most_transferred_in:
-          type: integer
-          nullable: true
-        most_captained:
-          type: integer
-          nullable: true
-        most_vice_captained:
-          type: integer
-          nullable: true
-        top_element:
-          type: integer
-          nullable: true
-        top_element_info:
-          type: object
-          nullable: true
-          properties:
-            id:
-              type: integer
-            points:
-              type: integer
-        transfers_made:
-          type: integer
-
-    Chip:
-      type: object
-      description: A special chip managers can use
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-          enum: [wildcard, freehit, bboost, 3xc, manager]
-        number:
-          type: integer
-          description: Number available per season
-        start_event:
-          type: integer
-          description: First gameweek chip can be used
-        stop_event:
-          type: integer
-          description: Last gameweek chip can be used
-        chip_type:
-          type: string
-          enum: [transfer, team]
-
-    ElementType:
-      type: object
-      description: Player position type
-      properties:
-        id:
-          type: integer
-          description: "1=GKP, 2=DEF, 3=MID, 4=FWD"
-        plural_name:
-          type: string
-        plural_name_short:
-          type: string
-        singular_name:
-          type: string
-        singular_name_short:
-          type: string
-        squad_select:
-          type: integer
-        squad_min_play:
-          type: integer
-        squad_max_play:
-          type: integer
-        element_count:
-          type: integer
-
-    Fixture:
-      type: object
-      description: A match fixture
-      properties:
-        id:
-          type: integer
-        code:
-          type: integer
-        event:
-          type: integer
-          nullable: true
-          description: Gameweek number
-        finished:
-          type: boolean
-        finished_provisional:
-          type: boolean
-        kickoff_time:
-          type: string
-          format: date-time
-          nullable: true
-        minutes:
-          type: integer
-        started:
-          type: boolean
-          nullable: true
-        team_a:
-          type: integer
-          description: Away team ID
-        team_a_score:
-          type: integer
-          nullable: true
-        team_h:
-          type: integer
-          description: Home team ID
-        team_h_score:
-          type: integer
-          nullable: true
-        team_h_difficulty:
-          type: integer
-          minimum: 1
-          maximum: 5
-          description: Home team FDR
-        team_a_difficulty:
-          type: integer
-          minimum: 1
-          maximum: 5
-          description: Away team FDR
-        pulse_id:
-          type: integer
-        stats:
-          type: array
-          items:
-            type: object
-            properties:
-              identifier:
-                type: string
-              a:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    value:
-                      type: integer
-                    element:
-                      type: integer
-              h:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    value:
-                      type: integer
-                    element:
-                      type: integer
-      example:
-        id: 234
-        code: 2345678
-        event: 21
-        finished: true
-        finished_provisional: true
-        kickoff_time: "2025-01-04T15:00:00Z"
-        minutes: 90
-        started: true
-        team_a: 14
-        team_a_score: 1
-        team_h: 1
-        team_h_score: 2
-        team_h_difficulty: 2
-        team_a_difficulty: 4
-        pulse_id: 93456
-        stats:
-          - identifier: goals_scored
-            a:
-              - value: 1
-                element: 234
-            h:
-              - value: 1
-                element: 17
-              - value: 1
-                element: 328
-          - identifier: assists
-            a: []
-            h:
-              - value: 1
-                element: 19
-
-    BootstrapStatic:
-      type: object
-      description: Complete bootstrap static response
-      properties:
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/Event'
-        game_settings:
-          type: object
-          properties:
-            league_join_private_max:
-              type: integer
-            league_join_public_max:
-              type: integer
-            squad_squadplay:
-              type: integer
-              description: Starting XI size
-            squad_squadsize:
-              type: integer
-              description: Total squad size
-            squad_team_limit:
-              type: integer
-              description: Max players from one team
-            squad_total_spend:
-              type: integer
-              description: Budget in 0.1m units
-            transfers_cap:
-              type: integer
-            transfers_sell_on_fee:
-              type: number
-            timezone:
-              type: string
-        phases:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              start_event:
-                type: integer
-              stop_event:
-                type: integer
-              highest_score:
-                type: integer
-                nullable: true
-        teams:
-          type: array
-          items:
-            $ref: '#/components/schemas/Team'
-        total_players:
-          type: integer
-          description: Total registered FPL managers
-        elements:
-          type: array
-          items:
-            $ref: '#/components/schemas/Player'
-        element_stats:
-          type: array
-          items:
-            type: object
-            properties:
-              label:
-                type: string
-              name:
-                type: string
+        rules: {}
+        scoring: {}
         element_types:
-          type: array
-          items:
-            $ref: '#/components/schemas/ElementType'
-        chips:
-          type: array
-          items:
-            $ref: '#/components/schemas/Chip'
-
-    ElementSummary:
-      type: object
-      properties:
-        fixtures:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              event:
-                type: integer
-                nullable: true
-              is_home:
-                type: boolean
-              difficulty:
-                type: integer
-        history:
-          type: array
-          items:
-            type: object
-            properties:
-              element:
-                type: integer
-              fixture:
-                type: integer
-              opponent_team:
-                type: integer
-              total_points:
-                type: integer
-              was_home:
-                type: boolean
-              kickoff_time:
-                type: string
-              round:
-                type: integer
-              minutes:
-                type: integer
-              goals_scored:
-                type: integer
-              assists:
-                type: integer
-              clean_sheets:
-                type: integer
-              bonus:
-                type: integer
-              bps:
-                type: integer
-              value:
-                type: integer
-              selected:
-                type: integer
-        history_past:
-          type: array
-          items:
-            type: object
-            properties:
-              season_name:
-                type: string
-              element_code:
-                type: integer
-              total_points:
-                type: integer
-              minutes:
-                type: integer
-              goals_scored:
-                type: integer
-              assists:
-                type: integer
-
-    EventLive:
-      type: object
-      properties:
-        elements:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              stats:
-                type: object
-                properties:
-                  minutes:
-                    type: integer
-                  goals_scored:
-                    type: integer
-                  assists:
-                    type: integer
-                  clean_sheets:
-                    type: integer
-                  goals_conceded:
-                    type: integer
-                  bonus:
-                    type: integer
-                  bps:
-                    type: integer
-                  total_points:
-                    type: integer
-                  in_dreamteam:
-                    type: boolean
-              explain:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    fixture:
-                      type: integer
-                    stats:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          identifier:
-                            type: string
-                          points:
-                            type: integer
-                          value:
-                            type: integer
-
-    Manager:
-      type: object
+          type: "array"
+          items: {}
+        pick_multipliers:
+          type: "array"
+          items: {}
+      required:
+        - "rules"
+        - "scoring"
+        - "element_types"
+        - "pick_multipliers"
+    Chip:
+      type: "object"
       properties:
         id:
-          type: integer
-        joined_time:
-          type: string
-          format: date-time
-        started_event:
-          type: integer
-        favourite_team:
-          type: integer
-          nullable: true
-        player_first_name:
-          type: string
-        player_last_name:
-          type: string
-        player_region_name:
-          type: string
-        summary_overall_points:
-          type: integer
-        summary_overall_rank:
-          type: integer
-        summary_event_points:
-          type: integer
-        summary_event_rank:
-          type: integer
-          nullable: true
-        current_event:
-          type: integer
+          type: "integer"
         name:
-          type: string
-          description: Team name
-        last_deadline_bank:
-          type: integer
-        last_deadline_value:
-          type: integer
-        leagues:
-          type: object
-          properties:
-            classic:
-              type: array
-              items:
-                type: object
-            h2h:
-              type: array
-              items:
-                type: object
-            cup:
-              type: object
-      example:
-        id: 123456
-        joined_time: "2024-07-15T09:23:45Z"
-        started_event: 1
-        favourite_team: 1
-        player_first_name: John
-        player_last_name: Smith
-        player_region_name: England
-        summary_overall_points: 1456
-        summary_overall_rank: 125432
-        summary_event_points: 67
-        summary_event_rank: 345678
-        current_event: 21
-        name: Smith's Soldiers
-        last_deadline_bank: 25
-        last_deadline_value: 1025
-        leagues:
-          classic:
-            - id: 314
-              name: Overall
-              entry_rank: 125432
-          h2h: []
-          cup:
-            status: null
-
-    ManagerHistory:
-      type: object
+          type: "string"
+          enum:
+            - "wildcard"
+            - "freehit"
+            - "bboost"
+            - "3xc"
+            - "manager"
+        number:
+          type: "integer"
+        start_event:
+          type: "integer"
+        stop_event:
+          type: "integer"
+        chip_type:
+          type: "string"
+          enum:
+            - "transfer"
+            - "team"
+        overrides:
+          $ref: "#/components/schemas/ChipOverrides"
+      required:
+        - "id"
+        - "name"
+        - "number"
+        - "start_event"
+        - "stop_event"
+        - "chip_type"
+        - "overrides"
+    ElementType:
+      type: "object"
       properties:
-        current:
-          type: array
+        id:
+          type: "integer"
+        plural_name:
+          type: "string"
+        plural_name_short:
+          type: "string"
+        singular_name:
+          type: "string"
+        singular_name_short:
+          type: "string"
+        squad_select:
+          type: "integer"
+        squad_min_select:
+          type: "integer"
+        squad_max_select:
+          type: "integer"
+        squad_min_play:
+          type: "integer"
+        squad_max_play:
+          type: "integer"
+        ui_shirt_specific:
+          type: "boolean"
+        sub_positions_locked:
+          type: "array"
           items:
-            type: object
-            properties:
-              event:
-                type: integer
-              points:
-                type: integer
-              total_points:
-                type: integer
-              rank:
-                type: integer
-              overall_rank:
-                type: integer
-              bank:
-                type: integer
-              value:
-                type: integer
-              event_transfers:
-                type: integer
-              event_transfers_cost:
-                type: integer
-              points_on_bench:
-                type: integer
-        past:
-          type: array
-          items:
-            type: object
-            properties:
-              season_name:
-                type: string
-              total_points:
-                type: integer
-              rank:
-                type: integer
-        chips:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-              time:
-                type: string
-                format: date-time
-              event:
-                type: integer
-
-    Transfer:
-      type: object
+            type: "integer"
+        element_count:
+          type: "integer"
+      required:
+        - "id"
+        - "plural_name"
+        - "plural_name_short"
+        - "singular_name"
+        - "singular_name_short"
+        - "squad_select"
+        - "squad_min_play"
+        - "squad_max_play"
+        - "ui_shirt_specific"
+        - "sub_positions_locked"
+        - "element_count"
+    ChipPlay:
+      type: "object"
       properties:
-        element_in:
-          type: integer
-          description: Player bought ID
-        element_in_cost:
-          type: integer
-          description: Purchase price in 0.1m units
-        element_out:
-          type: integer
-          description: Player sold ID
-        element_out_cost:
-          type: integer
-          description: Sale price in 0.1m units
-        entry:
-          type: integer
-          description: Manager ID
+        chip_name:
+          type: "string"
+        num_played:
+          type: "integer"
+      required:
+        - "chip_name"
+        - "num_played"
+    TopElementInfo:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        points:
+          type: "integer"
+      required:
+        - "id"
+        - "points"
+    Event:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        name:
+          type: "string"
+        deadline_time:
+          format: "date-time"
+          type: "string"
+        deadline_time_epoch:
+          type: "integer"
+        deadline_time_game_offset:
+          type: "integer"
+        release_time:
+          type: "string"
+        average_entry_score:
+          type: "integer"
+        finished:
+          type: "boolean"
+        data_checked:
+          type: "boolean"
+        highest_scoring_entry:
+          type: "integer"
+        highest_score:
+          type: "integer"
+        is_previous:
+          type: "boolean"
+        is_current:
+          type: "boolean"
+        is_next:
+          type: "boolean"
+        cup_leagues_created:
+          type: "boolean"
+        h2h_ko_matches_created:
+          type: "boolean"
+        can_enter:
+          type: "boolean"
+        can_manage:
+          type: "boolean"
+        released:
+          type: "boolean"
+        ranked_count:
+          type: "integer"
+        chip_plays:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ChipPlay"
+        most_selected:
+          type: "integer"
+        most_transferred_in:
+          type: "integer"
+        most_captained:
+          type: "integer"
+        most_vice_captained:
+          type: "integer"
+        top_element:
+          type: "integer"
+        top_element_info:
+          $ref: "#/components/schemas/TopElementInfo"
+        transfers_made:
+          type: "integer"
+      required:
+        - "id"
+        - "name"
+        - "deadline_time"
+        - "deadline_time_epoch"
+        - "deadline_time_game_offset"
+        - "average_entry_score"
+        - "finished"
+        - "data_checked"
+        - "is_previous"
+        - "is_current"
+        - "is_next"
+        - "cup_leagues_created"
+        - "h2h_ko_matches_created"
+        - "can_enter"
+        - "can_manage"
+        - "released"
+        - "ranked_count"
+        - "chip_plays"
+        - "transfers_made"
+    FixtureStat:
+      type: "object"
+      properties:
+        identifier:
+          type: "string"
+        a:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/FixtureStatA"
+        h:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/FixtureStatH"
+      required:
+        - "identifier"
+        - "a"
+        - "h"
+    Fixture:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "integer"
         event:
-          type: integer
-          description: Gameweek number
-        time:
-          type: string
-          format: date-time
-
-    ManagerPicks:
-      type: object
-      properties:
-        active_chip:
-          type: string
-          nullable: true
-        automatic_subs:
-          type: array
+          type: "integer"
+        finished:
+          type: "boolean"
+        finished_provisional:
+          type: "boolean"
+        kickoff_time:
+          format: "date-time"
+          type: "string"
+        minutes:
+          type: "integer"
+        provisional_start_time:
+          type: "boolean"
+        started:
+          type: "boolean"
+        team_a:
+          type: "integer"
+        team_a_score:
+          type: "integer"
+        team_h:
+          type: "integer"
+        team_h_score:
+          type: "integer"
+        team_h_difficulty:
+          minimum: 1
+          maximum: 5
+          type: "integer"
+        team_a_difficulty:
+          minimum: 1
+          maximum: 5
+          type: "integer"
+        pulse_id:
+          type: "integer"
+        stats:
+          type: "array"
           items:
-            type: object
-            properties:
-              entry:
-                type: integer
-              element_in:
-                type: integer
-              element_out:
-                type: integer
-              event:
-                type: integer
-        entry_history:
-          type: object
-          properties:
-            event:
-              type: integer
-            points:
-              type: integer
-            total_points:
-              type: integer
-            rank:
-              type: integer
-              nullable: true
-            overall_rank:
-              type: integer
-              nullable: true
-            bank:
-              type: integer
-            value:
-              type: integer
-            event_transfers:
-              type: integer
-            event_transfers_cost:
-              type: integer
-            points_on_bench:
-              type: integer
-        picks:
-          type: array
-          items:
-            type: object
-            properties:
-              element:
-                type: integer
-                description: Player ID
-              position:
-                type: integer
-                description: "Position 1-15 (1-11 starting, 12-15 bench)"
-              multiplier:
-                type: integer
-                description: "1=normal, 2=captain, 3=triple captain, 0=benched"
-              is_captain:
-                type: boolean
-              is_vice_captain:
-                type: boolean
-
-    LeagueClassicStandings:
-      type: object
-      properties:
-        new_entries:
-          type: object
-          properties:
-            has_next:
-              type: boolean
-            page:
-              type: integer
-            results:
-              type: array
-              items:
-                type: object
-        last_updated_data:
-          type: string
-          format: date-time
-        league:
-          type: object
-          properties:
-            id:
-              type: integer
-            name:
-              type: string
-            created:
-              type: string
-              format: date-time
-            closed:
-              type: boolean
-            max_entries:
-              type: integer
-              nullable: true
-            league_type:
-              type: string
-              enum: [x, s, c]
-              description: "x=private, s=global, c=country"
-            scoring:
-              type: string
-              enum: [c, h]
-            admin_entry:
-              type: integer
-              nullable: true
-            start_event:
-              type: integer
-            has_cup:
-              type: boolean
-        standings:
-          type: object
-          properties:
-            has_next:
-              type: boolean
-            page:
-              type: integer
-            results:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  event_total:
-                    type: integer
-                  player_name:
-                    type: string
-                  rank:
-                    type: integer
-                  last_rank:
-                    type: integer
-                  total:
-                    type: integer
-                  entry:
-                    type: integer
-                  entry_name:
-                    type: string
-
-    LeagueH2HMatches:
-      type: object
-      properties:
-        has_next:
-          type: boolean
-        page:
-          type: integer
-        results:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              entry_1_entry:
-                type: integer
-              entry_1_name:
-                type: string
-              entry_1_player_name:
-                type: string
-              entry_1_points:
-                type: integer
-              entry_1_total:
-                type: integer
-              entry_2_entry:
-                type: integer
-              entry_2_name:
-                type: string
-              entry_2_player_name:
-                type: string
-              entry_2_points:
-                type: integer
-              entry_2_total:
-                type: integer
-              is_knockout:
-                type: boolean
-              winner:
-                type: integer
-                nullable: true
-              event:
-                type: integer
-
-    EventStatus:
-      type: object
-      properties:
-        status:
-          type: array
-          items:
-            type: object
-            properties:
-              bonus_added:
-                type: boolean
-              date:
-                type: string
-              event:
-                type: integer
-              points:
-                type: string
-                enum: [r, l]
-                description: "r=ready/finalized, l=live/provisional"
-        leagues:
-          type: string
-
-    DreamTeam:
-      type: object
-      properties:
-        top_player:
-          type: object
-          properties:
-            id:
-              type: integer
-            points:
-              type: integer
-        team:
-          type: array
-          items:
-            type: object
-            properties:
-              element:
-                type: integer
-              points:
-                type: integer
-              position:
-                type: integer
-      example:
-        top_player:
-          id: 328
-          points: 21
-        team:
-          - element: 401
-            points: 9
-            position: 1
-          - element: 234
-            points: 12
-            position: 2
-          - element: 116
-            points: 11
-            position: 3
-          - element: 285
-            points: 8
-            position: 4
-          - element: 17
-            points: 10
-            position: 5
-          - element: 303
-            points: 15
-            position: 6
-          - element: 19
-            points: 12
-            position: 7
-          - element: 355
-            points: 9
-            position: 8
-          - element: 427
-            points: 13
-            position: 9
-          - element: 328
-            points: 21
-            position: 10
-          - element: 318
-            points: 14
-            position: 11
-
-    SetPieceNotes:
-      type: object
-      properties:
-        teams:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              notes:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    external_link:
-                      type: boolean
-                    info_message:
-                      type: string
-                    source_link:
-                      type: string
-                      nullable: true
-
-    MyTeam:
-      type: object
-      properties:
-        picks:
-          type: array
-          items:
-            type: object
-            properties:
-              element:
-                type: integer
-              position:
-                type: integer
-              selling_price:
-                type: integer
-              multiplier:
-                type: integer
-              purchase_price:
-                type: integer
-              is_captain:
-                type: boolean
-              is_vice_captain:
-                type: boolean
-        chips:
-          type: array
-          items:
-            type: object
-            properties:
-              status_for_entry:
-                type: string
-                enum: [available, played, unavailable]
-              name:
-                type: string
-              number:
-                type: integer
-              start_event:
-                type: integer
-              stop_event:
-                type: integer
-        transfers:
-          type: object
-          properties:
-            cost:
-              type: integer
-            status:
-              type: string
-              enum: [cost, free]
-            limit:
-              type: integer
-              nullable: true
-            made:
-              type: integer
-            bank:
-              type: integer
-            value:
-              type: integer
-
-    AuthenticatedUser:
-      type: object
-      properties:
-        player:
-          type: object
-          properties:
-            id:
-              type: integer
-            first_name:
-              type: string
-            last_name:
-              type: string
-            region:
-              type: integer
-            email:
-              type: string
-            entry:
-              type: integer
-              description: Manager/entry ID
-
-    ValuableTeam:
-      type: object
+            $ref: "#/components/schemas/FixtureStat"
+      required:
+        - "id"
+        - "code"
+        - "finished"
+        - "finished_provisional"
+        - "minutes"
+        - "provisional_start_time"
+        - "team_a"
+        - "team_h"
+        - "team_h_difficulty"
+        - "team_a_difficulty"
+        - "pulse_id"
+        - "stats"
+    ManagerLeague:
+      type: "object"
       properties:
         id:
-          type: integer
+          type: "integer"
         name:
-          type: string
-        manager:
-          type: string
-        value:
-          type: integer
-          description: Total squad value in 0.1m units
-
-    CupStatus:
-      type: object
+          type: "string"
+        short_name:
+          type: "string"
+        created:
+          type: "string"
+        closed:
+          type: "boolean"
+        rank:
+          type: "integer"
+        max_entries:
+          type: "integer"
+        league_type:
+          type: "string"
+        scoring:
+          type: "string"
+        admin_entry:
+          type: "integer"
+        start_event:
+          type: "integer"
+        entry_can_leave:
+          type: "boolean"
+        entry_can_admin:
+          type: "boolean"
+        entry_can_invite:
+          type: "boolean"
+        has_cup:
+          type: "boolean"
+        cup_league:
+          type: "integer"
+        cup_qualified:
+          type: "boolean"
+        entry_rank:
+          type: "integer"
+        entry_last_rank:
+          type: "integer"
+      required:
+        - "id"
+        - "name"
+        - "created"
+        - "closed"
+        - "league_type"
+        - "scoring"
+        - "start_event"
+        - "entry_can_leave"
+        - "entry_can_admin"
+        - "entry_can_invite"
+        - "has_cup"
+        - "entry_rank"
+        - "entry_last_rank"
+    ManagerCupStatus:
+      type: "object"
       properties:
         qualification_event:
-          type: integer
-          nullable: true
+          type: "integer"
         qualification_numbers:
-          type: integer
-          nullable: true
+          type: "integer"
         qualification_rank:
-          type: integer
-          nullable: true
+          type: "integer"
         qualification_state:
-          type: string
-          nullable: true
+          type: "string"
+    Manager:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        joined_time:
+          format: "date-time"
+          type: "string"
+        started_event:
+          type: "integer"
+        favourite_team:
+          type: "integer"
+        player_first_name:
+          type: "string"
+        player_last_name:
+          type: "string"
+        player_region_id:
+          type: "integer"
+        player_region_name:
+          type: "string"
+        player_region_iso_code_short:
+          type: "string"
+        player_region_iso_code_long:
+          type: "string"
+        summary_overall_points:
+          type: "integer"
+        summary_overall_rank:
+          type: "integer"
+        summary_event_points:
+          type: "integer"
+        summary_event_rank:
+          type: "integer"
+        current_event:
+          type: "integer"
+        name:
+          type: "string"
+        name_change_blocked:
+          type: "boolean"
+        kit:
+          type: "string"
+        last_deadline_bank:
+          type: "integer"
+        last_deadline_value:
+          type: "integer"
+        last_deadline_total_transfers:
+          type: "integer"
+        leagues:
+          type: "object"
+          properties:
+            classic:
+              type: "array"
+              items:
+                $ref: "#/components/schemas/ManagerLeague"
+            h2h:
+              type: "array"
+              items:
+                $ref: "#/components/schemas/ManagerLeague"
+            cup:
+              $ref: "#/components/schemas/ManagerCupStatus"
+            cup_matches:
+              type: "array"
+              items: {}
+          required:
+            - "classic"
+            - "h2h"
+            - "cup"
+            - "cup_matches"
+      required:
+        - "id"
+        - "joined_time"
+        - "started_event"
+        - "player_first_name"
+        - "player_last_name"
+        - "player_region_id"
+        - "player_region_name"
+        - "player_region_iso_code_short"
+        - "player_region_iso_code_long"
+        - "summary_overall_points"
+        - "summary_overall_rank"
+        - "summary_event_points"
+        - "current_event"
+        - "name"
+        - "name_change_blocked"
+        - "last_deadline_bank"
+        - "last_deadline_value"
+        - "last_deadline_total_transfers"
+        - "leagues"
+    Player:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "integer"
+        first_name:
+          type: "string"
+        second_name:
+          type: "string"
+        web_name:
+          type: "string"
+        team:
+          type: "integer"
+        team_code:
+          type: "integer"
+        element_type:
+          type: "integer"
+        status:
+          type: "string"
+          enum:
+            - "a"
+            - "d"
+            - "i"
+            - "n"
+            - "s"
+            - "u"
+        now_cost:
+          type: "integer"
+        cost_change_start:
+          type: "integer"
+        cost_change_event:
+          type: "integer"
+        cost_change_start_fall:
+          type: "integer"
+        cost_change_event_fall:
+          type: "integer"
+        photo:
+          type: "string"
+        news:
+          type: "string"
+        news_added:
+          type: "string"
+        chance_of_playing_next_round:
+          type: "integer"
+        chance_of_playing_this_round:
+          type: "integer"
+        selected_by_percent:
+          type: "string"
+        form:
+          type: "string"
+        points_per_game:
+          type: "string"
+        ep_this:
+          type: "string"
+        ep_next:
+          type: "string"
+        value_form:
+          type: "string"
+        value_season:
+          type: "string"
+        total_points:
+          type: "integer"
+        event_points:
+          type: "integer"
+        transfers_in:
+          type: "integer"
+        transfers_out:
+          type: "integer"
+        transfers_in_event:
+          type: "integer"
+        transfers_out_event:
+          type: "integer"
+        in_dreamteam:
+          type: "boolean"
+        dreamteam_count:
+          type: "integer"
+        special:
+          type: "boolean"
+        removed:
+          type: "boolean"
+        can_transact:
+          type: "boolean"
+        can_select:
+          type: "boolean"
+        squad_number:
+          type: "integer"
+        region:
+          type: "integer"
+        team_join_date:
+          type: "string"
+        birth_date:
+          type: "string"
+        has_temporary_code:
+          type: "boolean"
+        opta_code:
+          type: "string"
+        minutes:
+          type: "integer"
+        goals_scored:
+          type: "integer"
+        assists:
+          type: "integer"
+        clean_sheets:
+          type: "integer"
+        goals_conceded:
+          type: "integer"
+        own_goals:
+          type: "integer"
+        penalties_saved:
+          type: "integer"
+        penalties_missed:
+          type: "integer"
+        yellow_cards:
+          type: "integer"
+        red_cards:
+          type: "integer"
+        saves:
+          type: "integer"
+        bonus:
+          type: "integer"
+        bps:
+          type: "integer"
+        influence:
+          type: "string"
+        creativity:
+          type: "string"
+        threat:
+          type: "string"
+        ict_index:
+          type: "string"
+        starts:
+          type: "integer"
+        expected_goals:
+          type: "string"
+        expected_assists:
+          type: "string"
+        expected_goal_involvements:
+          type: "string"
+        expected_goals_conceded:
+          type: "string"
+        influence_rank:
+          type: "integer"
+        influence_rank_type:
+          type: "integer"
+        creativity_rank:
+          type: "integer"
+        creativity_rank_type:
+          type: "integer"
+        threat_rank:
+          type: "integer"
+        threat_rank_type:
+          type: "integer"
+        ict_index_rank:
+          type: "integer"
+        ict_index_rank_type:
+          type: "integer"
+        corners_and_indirect_freekicks_order:
+          type: "integer"
+        corners_and_indirect_freekicks_text:
+          type: "string"
+        direct_freekicks_order:
+          type: "integer"
+        direct_freekicks_text:
+          type: "string"
+        penalties_order:
+          type: "integer"
+        penalties_text:
+          type: "string"
+        expected_goals_per_90:
+          type: "number"
+        saves_per_90:
+          type: "number"
+        expected_assists_per_90:
+          type: "number"
+        expected_goal_involvements_per_90:
+          type: "number"
+        expected_goals_conceded_per_90:
+          type: "number"
+        goals_conceded_per_90:
+          type: "number"
+        now_cost_rank:
+          type: "integer"
+        now_cost_rank_type:
+          type: "integer"
+        form_rank:
+          type: "integer"
+        form_rank_type:
+          type: "integer"
+        points_per_game_rank:
+          type: "integer"
+        points_per_game_rank_type:
+          type: "integer"
+        selected_rank:
+          type: "integer"
+        selected_rank_type:
+          type: "integer"
+        starts_per_90:
+          type: "number"
+        clean_sheets_per_90:
+          type: "number"
+      required:
+        - "id"
+        - "code"
+        - "first_name"
+        - "second_name"
+        - "web_name"
+        - "team"
+        - "team_code"
+        - "element_type"
+        - "status"
+        - "now_cost"
+        - "cost_change_start"
+        - "cost_change_event"
+        - "cost_change_start_fall"
+        - "cost_change_event_fall"
+        - "photo"
+        - "news"
+        - "selected_by_percent"
+        - "form"
+        - "points_per_game"
+        - "value_form"
+        - "value_season"
+        - "total_points"
+        - "event_points"
+        - "transfers_in"
+        - "transfers_out"
+        - "transfers_in_event"
+        - "transfers_out_event"
+        - "in_dreamteam"
+        - "dreamteam_count"
+        - "special"
+        - "removed"
+        - "can_transact"
+        - "can_select"
+        - "has_temporary_code"
+        - "minutes"
+        - "goals_scored"
+        - "assists"
+        - "clean_sheets"
+        - "goals_conceded"
+        - "own_goals"
+        - "penalties_saved"
+        - "penalties_missed"
+        - "yellow_cards"
+        - "red_cards"
+        - "saves"
+        - "bonus"
+        - "bps"
+        - "influence"
+        - "creativity"
+        - "threat"
+        - "ict_index"
+        - "starts"
+        - "expected_goals"
+        - "expected_assists"
+        - "expected_goal_involvements"
+        - "expected_goals_conceded"
+        - "influence_rank"
+        - "influence_rank_type"
+        - "creativity_rank"
+        - "creativity_rank_type"
+        - "threat_rank"
+        - "threat_rank_type"
+        - "ict_index_rank"
+        - "ict_index_rank_type"
+        - "corners_and_indirect_freekicks_text"
+        - "direct_freekicks_text"
+        - "penalties_text"
+        - "expected_goals_per_90"
+        - "saves_per_90"
+        - "expected_assists_per_90"
+        - "expected_goal_involvements_per_90"
+        - "expected_goals_conceded_per_90"
+        - "goals_conceded_per_90"
+        - "now_cost_rank"
+        - "now_cost_rank_type"
+        - "form_rank"
+        - "form_rank_type"
+        - "points_per_game_rank"
+        - "points_per_game_rank_type"
+        - "selected_rank"
+        - "selected_rank_type"
+        - "starts_per_90"
+        - "clean_sheets_per_90"
+    Team:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "integer"
+        name:
+          type: "string"
+        short_name:
+          minLength: 3
+          maxLength: 3
+          type: "string"
+        strength:
+          minimum: 1
+          maximum: 5
+          type: "integer"
+        position:
+          type: "integer"
+        played:
+          type: "integer"
+        win:
+          type: "integer"
+        draw:
+          type: "integer"
+        loss:
+          type: "integer"
+        points:
+          type: "integer"
+        form:
+          type: "string"
+        team_division:
+          type: "integer"
+        unavailable:
+          type: "boolean"
+        strength_overall_home:
+          type: "integer"
+        strength_overall_away:
+          type: "integer"
+        strength_attack_home:
+          type: "integer"
+        strength_attack_away:
+          type: "integer"
+        strength_defence_home:
+          type: "integer"
+        strength_defence_away:
+          type: "integer"
+        pulse_id:
+          type: "integer"
+      required:
+        - "id"
+        - "code"
+        - "name"
+        - "short_name"
+        - "strength"
+        - "position"
+        - "played"
+        - "win"
+        - "draw"
+        - "loss"
+        - "points"
+        - "unavailable"
+        - "strength_overall_home"
+        - "strength_overall_away"
+        - "strength_attack_home"
+        - "strength_attack_away"
+        - "strength_defence_home"
+        - "strength_defence_away"
+        - "pulse_id"
+    FixtureStatA:
+      type: "object"
+      properties:
+        value:
+          type: "integer"
+        element:
+          type: "integer"
+      required:
+        - "value"
+        - "element"
+    FixtureStatH:
+      type: "object"
+      properties:
+        value:
+          type: "integer"
+        element:
+          type: "integer"
+      required:
+        - "value"
+        - "element"
+    GetBootstrapStaticResponse200Phase:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        name:
+          type: "string"
+        start_event:
+          type: "integer"
+        stop_event:
+          type: "integer"
+        highest_score:
+          type: "integer"
+      required:
+        - "id"
+        - "name"
+        - "start_event"
+        - "stop_event"
+    GetBootstrapStaticResponse200Elementstat:
+      type: "object"
+      properties:
+        label:
+          type: "string"
+        name:
+          type: "string"
+      required:
+        - "label"
+        - "name"
+    GetDreamTeamResponse200Team:
+      type: "object"
+      properties:
+        element:
+          type: "integer"
+        points:
+          type: "integer"
+        position:
+          type: "integer"
+      required:
+        - "element"
+        - "points"
+        - "position"
+    GetElementSummaryResponse200Fixture:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        code:
+          type: "integer"
+        team_h:
+          type: "integer"
+        team_h_score:
+          type: "integer"
+        team_a:
+          type: "integer"
+        team_a_score:
+          type: "integer"
+        event:
+          type: "integer"
+        finished:
+          type: "boolean"
+        minutes:
+          type: "integer"
+        provisional_start_time:
+          type: "boolean"
+        kickoff_time:
+          type: "string"
+        event_name:
+          type: "string"
+        is_home:
+          type: "boolean"
+        difficulty:
+          minimum: 1
+          maximum: 5
+          type: "integer"
+      required:
+        - "id"
+        - "code"
+        - "team_h"
+        - "team_a"
+        - "finished"
+        - "minutes"
+        - "provisional_start_time"
+        - "is_home"
+        - "difficulty"
+    GetElementSummaryResponse200History:
+      type: "object"
+      properties:
+        element:
+          type: "integer"
+        fixture:
+          type: "integer"
+        opponent_team:
+          type: "integer"
+        total_points:
+          type: "integer"
+        was_home:
+          type: "boolean"
+        kickoff_time:
+          type: "string"
+        team_h_score:
+          type: "integer"
+        team_a_score:
+          type: "integer"
+        round:
+          type: "integer"
+        minutes:
+          type: "integer"
+        goals_scored:
+          type: "integer"
+        assists:
+          type: "integer"
+        clean_sheets:
+          type: "integer"
+        goals_conceded:
+          type: "integer"
+        own_goals:
+          type: "integer"
+        penalties_saved:
+          type: "integer"
+        penalties_missed:
+          type: "integer"
+        yellow_cards:
+          type: "integer"
+        red_cards:
+          type: "integer"
+        saves:
+          type: "integer"
+        bonus:
+          type: "integer"
+        bps:
+          type: "integer"
+        influence:
+          type: "string"
+        creativity:
+          type: "string"
+        threat:
+          type: "string"
+        ict_index:
+          type: "string"
+        starts:
+          type: "integer"
+        expected_goals:
+          type: "string"
+        expected_assists:
+          type: "string"
+        expected_goal_involvements:
+          type: "string"
+        expected_goals_conceded:
+          type: "string"
+        value:
+          type: "integer"
+        transfers_balance:
+          type: "integer"
+        selected:
+          type: "integer"
+        transfers_in:
+          type: "integer"
+        transfers_out:
+          type: "integer"
+      required:
+        - "element"
+        - "fixture"
+        - "opponent_team"
+        - "total_points"
+        - "was_home"
+        - "kickoff_time"
+        - "team_h_score"
+        - "team_a_score"
+        - "round"
+        - "minutes"
+        - "goals_scored"
+        - "assists"
+        - "clean_sheets"
+        - "goals_conceded"
+        - "own_goals"
+        - "penalties_saved"
+        - "penalties_missed"
+        - "yellow_cards"
+        - "red_cards"
+        - "saves"
+        - "bonus"
+        - "bps"
+        - "influence"
+        - "creativity"
+        - "threat"
+        - "ict_index"
+        - "starts"
+        - "expected_goals"
+        - "expected_assists"
+        - "expected_goal_involvements"
+        - "expected_goals_conceded"
+        - "value"
+        - "transfers_balance"
+        - "selected"
+        - "transfers_in"
+        - "transfers_out"
+    GetElementSummaryResponse200Historypast:
+      type: "object"
+      properties:
+        season_name:
+          type: "string"
+        element_code:
+          type: "integer"
+        start_cost:
+          type: "integer"
+        end_cost:
+          type: "integer"
+        total_points:
+          type: "integer"
+        minutes:
+          type: "integer"
+        goals_scored:
+          type: "integer"
+        assists:
+          type: "integer"
+        clean_sheets:
+          type: "integer"
+        goals_conceded:
+          type: "integer"
+        own_goals:
+          type: "integer"
+        penalties_saved:
+          type: "integer"
+        penalties_missed:
+          type: "integer"
+        yellow_cards:
+          type: "integer"
+        red_cards:
+          type: "integer"
+        saves:
+          type: "integer"
+        bonus:
+          type: "integer"
+        bps:
+          type: "integer"
+        influence:
+          type: "string"
+        creativity:
+          type: "string"
+        threat:
+          type: "string"
+        ict_index:
+          type: "string"
+        starts:
+          type: "integer"
+        expected_goals:
+          type: "string"
+        expected_assists:
+          type: "string"
+        expected_goal_involvements:
+          type: "string"
+        expected_goals_conceded:
+          type: "string"
+      required:
+        - "season_name"
+        - "element_code"
+        - "start_cost"
+        - "end_cost"
+        - "total_points"
+        - "minutes"
+        - "goals_scored"
+        - "assists"
+        - "clean_sheets"
+        - "goals_conceded"
+        - "own_goals"
+        - "penalties_saved"
+        - "penalties_missed"
+        - "yellow_cards"
+        - "red_cards"
+        - "saves"
+        - "bonus"
+        - "bps"
+        - "influence"
+        - "creativity"
+        - "threat"
+        - "ict_index"
+        - "starts"
+        - "expected_goals"
+        - "expected_assists"
+        - "expected_goal_involvements"
+        - "expected_goals_conceded"
+    GetEntryHistoryResponse200Current:
+      type: "object"
+      properties:
+        event:
+          type: "integer"
+        points:
+          type: "integer"
+        total_points:
+          type: "integer"
+        rank:
+          type: "integer"
+        rank_sort:
+          type: "integer"
+        overall_rank:
+          type: "integer"
+        percentile_rank:
+          type: "integer"
+        bank:
+          type: "integer"
+        value:
+          type: "integer"
+        event_transfers:
+          type: "integer"
+        event_transfers_cost:
+          type: "integer"
+        points_on_bench:
+          type: "integer"
+      required:
+        - "event"
+        - "points"
+        - "total_points"
+        - "rank"
+        - "rank_sort"
+        - "overall_rank"
+        - "bank"
+        - "value"
+        - "event_transfers"
+        - "event_transfers_cost"
+        - "points_on_bench"
+    GetEntryHistoryResponse200Past:
+      type: "object"
+      properties:
+        season_name:
+          type: "string"
+        total_points:
+          type: "integer"
+        rank:
+          type: "integer"
+      required:
+        - "season_name"
+        - "total_points"
+        - "rank"
+    GetEntryHistoryResponse200Chip:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        time:
+          format: "date-time"
+          type: "string"
+        event:
+          type: "integer"
+      required:
+        - "name"
+        - "time"
+        - "event"
+    GetEntryPicksResponse200Automaticsub:
+      type: "object"
+      properties:
+        entry:
+          type: "integer"
+        element_in:
+          type: "integer"
+        element_out:
+          type: "integer"
+        event:
+          type: "integer"
+      required:
+        - "entry"
+        - "element_in"
+        - "element_out"
+        - "event"
+    GetEntryPicksResponse200Pick:
+      type: "object"
+      properties:
+        element:
+          type: "integer"
+        position:
+          type: "integer"
+        multiplier:
+          type: "integer"
+        is_captain:
+          type: "boolean"
+        is_vice_captain:
+          type: "boolean"
+      required:
+        - "element"
+        - "position"
+        - "multiplier"
+        - "is_captain"
+        - "is_vice_captain"
+    GetEventLiveResponse200ElementExplainStat:
+      type: "object"
+      properties:
+        identifier:
+          type: "string"
+        points:
+          type: "integer"
+        value:
+          type: "integer"
+      required:
+        - "identifier"
+        - "points"
+        - "value"
+    GetEventLiveResponse200ElementExplain:
+      type: "object"
+      properties:
+        fixture:
+          type: "integer"
+        stats:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/GetEventLiveResponse200ElementExplainStat"
+      required:
+        - "fixture"
+        - "stats"
+    GetEventLiveResponse200Element:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        stats:
+          type: "object"
+          properties:
+            minutes:
+              type: "integer"
+            goals_scored:
+              type: "integer"
+            assists:
+              type: "integer"
+            clean_sheets:
+              type: "integer"
+            goals_conceded:
+              type: "integer"
+            own_goals:
+              type: "integer"
+            penalties_saved:
+              type: "integer"
+            penalties_missed:
+              type: "integer"
+            yellow_cards:
+              type: "integer"
+            red_cards:
+              type: "integer"
+            saves:
+              type: "integer"
+            bonus:
+              type: "integer"
+            bps:
+              type: "integer"
+            influence:
+              type: "string"
+            creativity:
+              type: "string"
+            threat:
+              type: "string"
+            ict_index:
+              type: "string"
+            starts:
+              type: "integer"
+            expected_goals:
+              type: "string"
+            expected_assists:
+              type: "string"
+            expected_goal_involvements:
+              type: "string"
+            expected_goals_conceded:
+              type: "string"
+            total_points:
+              type: "integer"
+            in_dreamteam:
+              type: "boolean"
+          required:
+            - "minutes"
+            - "goals_scored"
+            - "assists"
+            - "clean_sheets"
+            - "goals_conceded"
+            - "own_goals"
+            - "penalties_saved"
+            - "penalties_missed"
+            - "yellow_cards"
+            - "red_cards"
+            - "saves"
+            - "bonus"
+            - "bps"
+            - "influence"
+            - "creativity"
+            - "threat"
+            - "ict_index"
+            - "starts"
+            - "expected_goals"
+            - "expected_assists"
+            - "expected_goal_involvements"
+            - "expected_goals_conceded"
+            - "total_points"
+            - "in_dreamteam"
+        explain:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/GetEventLiveResponse200ElementExplain"
+      required:
+        - "id"
+        - "stats"
+        - "explain"
+    GetEventStatusResponse200Statu:
+      type: "object"
+      properties:
+        bonus_added:
+          type: "boolean"
+        date:
+          type: "string"
+        event:
+          type: "integer"
+        points:
+          type: "string"
+          enum:
+            - "r"
+            - "l"
+      required:
+        - "bonus_added"
+        - "date"
+        - "event"
+        - "points"
+    GetLeagueClassicStandingsResponse200NewentriesResult:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        entry_name:
+          type: "string"
+        player_first_name:
+          type: "string"
+        player_last_name:
+          type: "string"
+        joined_time:
+          format: "date-time"
+          type: "string"
+        entry:
+          type: "integer"
+      required:
+        - "id"
+        - "entry_name"
+        - "player_first_name"
+        - "player_last_name"
+        - "joined_time"
+        - "entry"
+    GetLeagueClassicStandingsResponse200StandingsResult:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        event_total:
+          type: "integer"
+        player_name:
+          type: "string"
+        rank:
+          type: "integer"
+        last_rank:
+          type: "integer"
+        rank_sort:
+          type: "integer"
+        total:
+          type: "integer"
+        entry:
+          type: "integer"
+        entry_name:
+          type: "string"
+      required:
+        - "id"
+        - "event_total"
+        - "player_name"
+        - "rank"
+        - "last_rank"
+        - "rank_sort"
+        - "total"
+        - "entry"
+        - "entry_name"
+    GetLeagueH2HMatchesResponse200Result:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        entry_1_entry:
+          type: "integer"
+        entry_1_name:
+          type: "string"
+        entry_1_player_name:
+          type: "string"
+        entry_1_points:
+          type: "integer"
+        entry_1_win:
+          type: "integer"
+        entry_1_draw:
+          type: "integer"
+        entry_1_loss:
+          type: "integer"
+        entry_1_total:
+          type: "integer"
+        entry_2_entry:
+          type: "integer"
+        entry_2_name:
+          type: "string"
+        entry_2_player_name:
+          type: "string"
+        entry_2_points:
+          type: "integer"
+        entry_2_win:
+          type: "integer"
+        entry_2_draw:
+          type: "integer"
+        entry_2_loss:
+          type: "integer"
+        entry_2_total:
+          type: "integer"
+        is_knockout:
+          type: "boolean"
+        league:
+          type: "integer"
+        winner:
+          type: "integer"
+        seed_value:
+          type: "integer"
+        event:
+          type: "integer"
+        tiebreak:
+          type: "string"
+        is_bye:
+          type: "boolean"
+        knockout_name:
+          type: "string"
+      required:
+        - "id"
+        - "entry_1_entry"
+        - "entry_1_name"
+        - "entry_1_player_name"
+        - "entry_1_points"
+        - "entry_1_win"
+        - "entry_1_draw"
+        - "entry_1_loss"
+        - "entry_1_total"
+        - "entry_2_entry"
+        - "entry_2_name"
+        - "entry_2_player_name"
+        - "entry_2_points"
+        - "entry_2_win"
+        - "entry_2_draw"
+        - "entry_2_loss"
+        - "entry_2_total"
+        - "is_knockout"
+        - "league"
+        - "event"
+        - "is_bye"
+    GetMyTeamResponse200Pick:
+      type: "object"
+      properties:
+        element:
+          type: "integer"
+        position:
+          type: "integer"
+        selling_price:
+          type: "integer"
+        multiplier:
+          type: "integer"
+        purchase_price:
+          type: "integer"
+        is_captain:
+          type: "boolean"
+        is_vice_captain:
+          type: "boolean"
+      required:
+        - "element"
+        - "position"
+        - "selling_price"
+        - "multiplier"
+        - "purchase_price"
+        - "is_captain"
+        - "is_vice_captain"
+    GetMyTeamResponse200Chip:
+      type: "object"
+      properties:
+        status_for_entry:
+          type: "string"
+          enum:
+            - "available"
+            - "played"
+            - "unavailable"
+        played_by_entry:
+          type: "array"
+          items:
+            type: "integer"
+        name:
+          type: "string"
+        number:
+          type: "integer"
+        start_event:
+          type: "integer"
+        stop_event:
+          type: "integer"
+        chip_type:
+          type: "string"
+      required:
+        - "status_for_entry"
+        - "played_by_entry"
+        - "name"
+        - "number"
+        - "start_event"
+        - "stop_event"
+        - "chip_type"
+    GetSetPieceNotesResponse200TeamNote:
+      type: "object"
+      properties:
+        external_link:
+          type: "boolean"
+        info_message:
+          type: "string"
+        source_link:
+          type: "string"
+      required:
+        - "external_link"
+        - "info_message"
+    GetSetPieceNotesResponse200Team:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        notes:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/GetSetPieceNotesResponse200TeamNote"
+      required:
+        - "id"
+        - "notes"
+servers:
+  - url: "https://fantasy.premierleague.com/api"
+tags:
+  - name: "General"
+    description: "Core game data and bootstrap information"
+  - name: "Players"
+    description: "Player statistics and summaries"
+  - name: "Fixtures"
+    description: "Match fixtures and results"
+  - name: "Managers"
+    description: "Manager/team owner data and history"
+  - name: "Leagues"
+    description: "League standings and competitions"
+  - name: "Live"
+    description: "Live gameweek data"
+  - name: "Stats"
+    description: "Game statistics and leaderboards"

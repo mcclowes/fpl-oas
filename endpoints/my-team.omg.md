@@ -32,7 +32,7 @@ Returns the authenticated manager's current team, including players, chips avail
   }],
   chips: [{
     status_for_entry: "available" | "played" | "unavailable",
-    played_by_entry: integer[],
+    played_by_entry: [integer],
     name: string,
     number: integer,
     start_event: integer,

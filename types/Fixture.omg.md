@@ -1,5 +1,4 @@
 ---
-$id: Fixture
 ---
 
 # Fixture
@@ -7,13 +6,15 @@ $id: Fixture
 A match fixture between two Premier League teams.
 
 ```omg.type
-FixtureStat: {
+type FixtureStat = {
   identifier: string,
   a: [{value: integer, element: integer}],
   h: [{value: integer, element: integer}]
 }
+```
 
-Fixture: {
+```omg.type
+type Fixture = {
   id: integer @description("Unique fixture identifier"),
   code: integer @description("External fixture code"),
   event: integer? @description("Gameweek number (null if unscheduled)"),
@@ -30,6 +31,6 @@ Fixture: {
   team_h_difficulty: integer @min(1) @max(5) @description("Home team FDR"),
   team_a_difficulty: integer @min(1) @max(5) @description("Away team FDR"),
   pulse_id: integer,
-  stats: FixtureStat[] @description("Match statistics (goals, assists, etc.)")
+  stats: [FixtureStat] @description("Match statistics (goals, assists, etc.)")
 }
 ```

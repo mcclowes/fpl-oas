@@ -17,7 +17,7 @@ Returns all fixtures for the current season. Past fixtures include scores and de
 ```
 
 ```omg.response
-Fixture[]
+[Fixture]
 ```
 
 ```omg.example

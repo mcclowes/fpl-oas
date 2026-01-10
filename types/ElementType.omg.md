@@ -1,5 +1,4 @@
 ---
-$id: ElementType
 ---
 
 # Element Type (Position)
@@ -7,7 +6,7 @@ $id: ElementType
 Player positions in Fantasy Premier League.
 
 ```omg.type
-ElementType: {
+type ElementType = {
   id: integer @description("1=GKP, 2=DEF, 3=MID, 4=FWD"),
   plural_name: string @description("Full plural name (e.g., 'Goalkeepers')"),
   plural_name_short: string @description("Short plural name (e.g., 'GKP')"),
@@ -19,7 +18,7 @@ ElementType: {
   squad_min_play: integer @description("Minimum that must play"),
   squad_max_play: integer @description("Maximum that can play"),
   ui_shirt_specific: boolean,
-  sub_positions_locked: integer[] @description("Locked substitute positions"),
+  sub_positions_locked: [integer] @description("Locked substitute positions"),
   element_count: integer @description("Total players of this position")
 }
 ```

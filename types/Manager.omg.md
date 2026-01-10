@@ -1,5 +1,4 @@
 ---
-$id: Manager
 ---
 
 # Manager (Entry)
@@ -7,7 +6,7 @@ $id: Manager
 A Fantasy Premier League manager/team owner.
 
 ```omg.type
-ManagerLeague: {
+type ManagerLeague = {
   id: integer,
   name: string,
   short_name: string?,
@@ -28,15 +27,19 @@ ManagerLeague: {
   entry_rank: integer,
   entry_last_rank: integer
 }
+```
 
-ManagerCupStatus: {
+```omg.type
+type ManagerCupStatus = {
   qualification_event: integer?,
   qualification_numbers: integer?,
   qualification_rank: integer?,
   qualification_state: string?
 }
+```
 
-Manager: {
+```omg.type
+type Manager = {
   id: integer @description("Unique manager/entry ID"),
   joined_time: string @format("date-time"),
   started_event: integer @description("First gameweek played"),
@@ -59,10 +62,10 @@ Manager: {
   last_deadline_value: integer @description("Squad value at last deadline"),
   last_deadline_total_transfers: integer,
   leagues: {
-    classic: ManagerLeague[],
-    h2h: ManagerLeague[],
+    classic: [ManagerLeague],
+    h2h: [ManagerLeague],
     cup: ManagerCupStatus,
-    cup_matches: array
+    cup_matches: [any]
   }
 }
 ```

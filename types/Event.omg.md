@@ -1,5 +1,4 @@
 ---
-$id: Event
 ---
 
 # Event (Gameweek)
@@ -7,17 +6,21 @@ $id: Event
 A gameweek in the FPL season. The API refers to gameweeks as "events".
 
 ```omg.type
-ChipPlay: {
+type ChipPlay = {
   chip_name: string,
   num_played: integer
 }
+```
 
-TopElementInfo: {
+```omg.type
+type TopElementInfo = {
   id: integer,
   points: integer
 }
+```
 
-Event: {
+```omg.type
+type Event = {
   id: integer @description("Gameweek number"),
   name: string @description("Display name (e.g., 'Gameweek 1')"),
   deadline_time: string @format("date-time") @description("ISO 8601 deadline timestamp"),
@@ -38,7 +41,7 @@ Event: {
   can_manage: boolean @description("Whether team changes are allowed"),
   released: boolean,
   ranked_count: integer @description("Number of ranked managers"),
-  chip_plays: ChipPlay[] @description("Chips used this gameweek"),
+  chip_plays: [ChipPlay] @description("Chips used this gameweek"),
   most_selected: integer? @description("Most selected player ID"),
   most_transferred_in: integer? @description("Most transferred in player ID"),
   most_captained: integer? @description("Most captained player ID"),

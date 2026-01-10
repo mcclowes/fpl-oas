@@ -13,7 +13,7 @@ This endpoint provides everything needed to render the main FPL interface and sh
 
 ```omg.response
 {
-  events: Event[] @description("All 38 gameweeks"),
+  events: [Event] @description("All 38 gameweeks"),
   game_settings: {
     league_join_private_max: integer,
     league_join_public_max: integer,
@@ -30,8 +30,8 @@ This endpoint provides everything needed to render the main FPL interface and sh
     cup_stop_event_id: integer?,
     cup_qualifying_method: string?,
     cup_type: string?,
-    featured_entries: integer[],
-    percentile_ranks: integer[],
+    featured_entries: [integer],
+    percentile_ranks: [integer],
     squad_squadplay: integer @description("Starting XI size"),
     squad_squadsize: integer @description("Total squad size"),
     squad_team_limit: integer @description("Max players from one team"),
@@ -52,15 +52,15 @@ This endpoint provides everything needed to render the main FPL interface and sh
     stop_event: integer,
     highest_score: integer?
   }],
-  teams: Team[] @description("All 20 Premier League teams"),
+  teams: [Team] @description("All 20 Premier League teams"),
   total_players: integer @description("Total registered FPL managers"),
-  elements: Player[] @description("All players (elements)"),
+  elements: [Player] @description("All players (elements)"),
   element_stats: [{
     label: string @description("Display label"),
     name: string @description("API field name")
   }] @description("Available player statistics"),
-  element_types: ElementType[] @description("Player positions"),
-  chips: Chip[] @description("Available chips")
+  element_types: [ElementType] @description("Player positions"),
+  chips: [Chip] @description("Available chips")
 }
 ```
 

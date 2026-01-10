@@ -1,5 +1,4 @@
 ---
-$id: Chip
 ---
 
 # Chip
@@ -7,14 +6,16 @@ $id: Chip
 A special chip that managers can use to boost their team.
 
 ```omg.type
-ChipOverrides: {
-  rules: object,
-  scoring: object,
-  element_types: array,
-  pick_multipliers: array
+type ChipOverrides = {
+  rules: any,
+  scoring: any,
+  element_types: [any],
+  pick_multipliers: [any]
 }
+```
 
-Chip: {
+```omg.type
+type Chip = {
   id: integer @description("Unique chip identifier"),
   name: "wildcard" | "freehit" | "bboost" | "3xc" | "manager" @description("Chip type identifier"),
   number: integer @description("Number of this chip type available per season"),
