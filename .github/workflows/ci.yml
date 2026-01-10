@@ -24,7 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Build omg packages
         working-directory: omg
@@ -32,24 +31,14 @@ jobs:
           npm ci
           npm run build
 
-      - name: Link omg packages
-        run: |
-          cd omg/packages/omg-parser && npm link
-          cd ../omg-compiler && npm link
-          cd ../omg-linter && npm link
-          cd ../omg-md-cli && npm link
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Link omg packages to project
-        run: npm link omg-md-cli omg-parser omg-compiler omg-linter
+      - name: Install fpl-oas dependencies
+        run: npm install --ignore-scripts --omit=dev || npm install --ignore-scripts
 
       - name: Lint OMG files
-        run: npm run lint
+        run: node omg/packages/omg-md-cli/dist/cli.js lint endpoints/
 
       - name: Build OpenAPI spec
-        run: npm run build:spec
+        run: node omg/packages/omg-md-cli/dist/cli.js build api.omg.md -o public/openapi.yaml
 
       - name: Verify spec was generated
         run: |
