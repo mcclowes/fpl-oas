@@ -1,0 +1,16 @@
+{
+  "buildCommand": "echo 'No build needed'",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/openapi.yaml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/yaml" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

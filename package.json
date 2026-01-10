@@ -1,0 +1,25 @@
+{
+  "name": "fpl-api-docs",
+  "version": "1.0.0",
+  "description": "Fantasy Premier League API documentation using OMG",
+  "scripts": {
+    "build": "omg build api.omg.md -o dist/openapi.yaml",
+    "build:json": "omg build api.omg.md -o dist/openapi.json",
+    "lint": "omg lint api.omg.md",
+    "preview": "npx @scalar/cli preview dist/openapi.yaml",
+    "serve": "npx serve dist"
+  },
+  "devDependencies": {
+    "omg-md-cli": "^0.1.0",
+    "@scalar/cli": "^0.2.0",
+    "serve": "^14.2.0"
+  },
+  "keywords": [
+    "fpl",
+    "fantasy-premier-league",
+    "api",
+    "openapi",
+    "documentation"
+  ],
+  "license": "MIT"
+}
