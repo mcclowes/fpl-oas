@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout fpl-oas
         uses: actions/checkout@v4
+        with:
+          path: fpl-oas
 
       - name: Checkout omg repo
         uses: actions/checkout@v4
@@ -32,15 +34,19 @@ jobs:
           npm run build
 
       - name: Install fpl-oas dependencies
-        run: npm install --ignore-scripts --omit=dev || npm install --ignore-scripts
+        working-directory: fpl-oas
+        run: npm install --ignore-scripts || true
 
       - name: Lint OMG files
-        run: node omg/packages/omg-md-cli/dist/cli.js lint endpoints/
+        working-directory: fpl-oas
+        run: node ../omg/packages/omg-md-cli/dist/cli.js lint endpoints/
 
       - name: Build OpenAPI spec
-        run: node omg/packages/omg-md-cli/dist/cli.js build api.omg.md -o public/openapi.yaml
+        working-directory: fpl-oas
+        run: node ../omg/packages/omg-md-cli/dist/cli.js build api.omg.md -o public/openapi.yaml
 
       - name: Verify spec was generated
+        working-directory: fpl-oas
         run: |
           if [ ! -f public/openapi.yaml ]; then
             echo "Error: openapi.yaml was not generated"
