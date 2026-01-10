@@ -1,6 +1,6 @@
 # FPL API documentation
 
-Unofficial API documentation for the Fantasy Premier League (FPL) API, built with [OMG](https://omg.gs) and deployed with [Scalar](https://scalar.com).
+Unofficial API documentation for the Fantasy Premier League (FPL) API, built with [OMG](https://omg.gs) and [Scalar](https://scalar.com).
 
 ## Overview
 
@@ -41,7 +41,7 @@ Base URL: `https://fantasy.premierleague.com/api/`
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- npm
 
 ### Setup
 
@@ -49,33 +49,32 @@ Base URL: `https://fantasy.premierleague.com/api/`
 npm install
 ```
 
-### Build OpenAPI spec
+### Development server
+
+```bash
+npm run dev
+```
+
+Open http://localhost:5173
+
+### Build
 
 ```bash
 npm run build
 ```
 
-### Preview documentation
+### Preview production build
 
 ```bash
 npm run preview
 ```
-
-Or serve the dist folder:
-
-```bash
-npm run serve
-```
-
-Then open http://localhost:3000
 
 ## Deployment
 
 ### Vercel
 
 1. Connect your repository to Vercel
-2. Set build output to `dist`
-3. Deploy
+2. Deploy (config is in `vercel.json`)
 
 ### Static hosting
 
@@ -85,29 +84,31 @@ Upload the contents of the `dist` folder to any static hosting provider.
 
 ```
 fpl-oas/
-├── api.omg.md           # Main API configuration
-├── endpoints/           # Individual endpoint definitions
+├── src/                     # React app source
+│   ├── App.tsx              # Scalar component wrapper
+│   ├── main.tsx             # Entry point
+│   └── index.css            # Minimal styles
+├── public/
+│   └── openapi.yaml         # Built OpenAPI spec (committed)
+├── api.omg.md               # Main API configuration
+├── endpoints/               # Individual endpoint definitions
 │   ├── bootstrap-static.omg.md
 │   ├── fixtures.omg.md
 │   └── ...
-├── types/               # Shared type definitions
+├── types/                   # Shared type definitions
 │   ├── Player.omg.md
 │   ├── Team.omg.md
 │   └── ...
-├── public/
-│   └── index.html       # Scalar documentation template
-├── dist/                # Built output (gitignored)
-│   ├── openapi.yaml     # Generated OpenAPI spec
-│   └── index.html       # Copied from public/
+├── dist/                    # Vite build output (gitignored)
 └── package.json
 ```
 
 ## Authentication
 
 Most endpoints are public. Some endpoints require authentication:
-- `/my-team/{id}/`
+- `/my-team/{manager_id}/`
 - `/me/`
-- `/entry/{id}/transfers-latest/`
+- `/entry/{manager_id}/transfers-latest/`
 
 Authentication is handled via session cookies from logging into fantasy.premierleague.com.
 

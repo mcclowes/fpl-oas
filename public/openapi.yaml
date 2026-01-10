@@ -555,6 +555,53 @@ components:
           type: string
         expected_goals_conceded:
           type: string
+      example:
+        id: 328
+        code: 223094
+        first_name: Erling
+        second_name: Haaland
+        web_name: Haaland
+        team: 11
+        team_code: 43
+        element_type: 4
+        status: a
+        now_cost: 150
+        news: ""
+        news_added: null
+        chance_of_playing_next_round: null
+        chance_of_playing_this_round: null
+        selected_by_percent: "52.3"
+        form: "8.5"
+        points_per_game: "7.2"
+        ep_this: "6.8"
+        ep_next: "7.1"
+        total_points: 158
+        event_points: 13
+        transfers_in: 2145678
+        transfers_out: 876543
+        transfers_in_event: 45678
+        transfers_out_event: 12345
+        minutes: 1890
+        goals_scored: 22
+        assists: 5
+        clean_sheets: 0
+        goals_conceded: 0
+        own_goals: 0
+        penalties_saved: 0
+        penalties_missed: 1
+        yellow_cards: 2
+        red_cards: 0
+        saves: 0
+        bonus: 24
+        bps: 567
+        influence: "823.4"
+        creativity: "156.2"
+        threat: "1245.0"
+        ict_index: "222.5"
+        expected_goals: "19.85"
+        expected_assists: "3.12"
+        expected_goal_involvements: "22.97"
+        expected_goals_conceded: "0.00"
 
     Team:
       type: object
@@ -612,6 +659,27 @@ components:
           type: integer
         pulse_id:
           type: integer
+      example:
+        id: 1
+        code: 3
+        name: Arsenal
+        short_name: ARS
+        strength: 4
+        position: 2
+        played: 21
+        win: 14
+        draw: 5
+        loss: 2
+        points: 47
+        form: "WWDWL"
+        unavailable: false
+        strength_overall_home: 1330
+        strength_overall_away: 1340
+        strength_attack_home: 1310
+        strength_attack_away: 1350
+        strength_defence_home: 1320
+        strength_defence_away: 1290
+        pulse_id: 1
 
     Event:
       type: object
@@ -814,6 +882,37 @@ components:
                       type: integer
                     element:
                       type: integer
+      example:
+        id: 234
+        code: 2345678
+        event: 21
+        finished: true
+        finished_provisional: true
+        kickoff_time: "2025-01-04T15:00:00Z"
+        minutes: 90
+        started: true
+        team_a: 14
+        team_a_score: 1
+        team_h: 1
+        team_h_score: 2
+        team_h_difficulty: 2
+        team_a_difficulty: 4
+        pulse_id: 93456
+        stats:
+          - identifier: goals_scored
+            a:
+              - value: 1
+                element: 234
+            h:
+              - value: 1
+                element: 17
+              - value: 1
+                element: 328
+          - identifier: assists
+            a: []
+            h:
+              - value: 1
+                element: 19
 
     BootstrapStatic:
       type: object
@@ -1063,6 +1162,30 @@ components:
                 type: object
             cup:
               type: object
+      example:
+        id: 123456
+        joined_time: "2024-07-15T09:23:45Z"
+        started_event: 1
+        favourite_team: 1
+        player_first_name: John
+        player_last_name: Smith
+        player_region_name: England
+        summary_overall_points: 1456
+        summary_overall_rank: 125432
+        summary_event_points: 67
+        summary_event_rank: 345678
+        current_event: 21
+        name: Smith's Soldiers
+        last_deadline_bank: 25
+        last_deadline_value: 1025
+        leagues:
+          classic:
+            - id: 314
+              name: Overall
+              entry_rank: 125432
+          h2h: []
+          cup:
+            status: null
 
     ManagerHistory:
       type: object
@@ -1363,6 +1486,44 @@ components:
                 type: integer
               position:
                 type: integer
+      example:
+        top_player:
+          id: 328
+          points: 21
+        team:
+          - element: 401
+            points: 9
+            position: 1
+          - element: 234
+            points: 12
+            position: 2
+          - element: 116
+            points: 11
+            position: 3
+          - element: 285
+            points: 8
+            position: 4
+          - element: 17
+            points: 10
+            position: 5
+          - element: 303
+            points: 15
+            position: 6
+          - element: 19
+            points: 12
+            position: 7
+          - element: 355
+            points: 9
+            position: 8
+          - element: 427
+            points: 13
+            position: 9
+          - element: 328
+            points: 21
+            position: 10
+          - element: 318
+            points: 14
+            position: 11
 
     SetPieceNotes:
       type: object
