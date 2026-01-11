@@ -3,7 +3,27 @@
     "allow": [
       "mcp__github__get_me",
       "mcp__github__create_repository",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Skill(omg)",
+      "mcp__context7__resolve-library-id",
+      "Bash(for f in endpoints/*.omg.md types/*.omg.md)",
+      "Bash(do echo \"Testing $f...\")",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(for f in types/*.omg.md)",
+      "Bash(do echo -n \"Testing $f... \")",
+      "Bash(grep:*)",
+      "Bash(do)",
+      "Bash(npm link:*)",
+      "Bash(npm view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git pull:*)",
+      "Bash(find:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
