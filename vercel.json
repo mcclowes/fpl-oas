@@ -1,13 +1,17 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
+  "outputDirectory": "build",
   "headers": [
     {
       "source": "/openapi.yaml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/yaml" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    },
+    {
+      "source": "/api/openapi.yaml",
       "headers": [
         { "key": "Content-Type", "value": "application/yaml" },
         { "key": "Access-Control-Allow-Origin", "value": "*" }

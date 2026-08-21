@@ -1,0 +1,142 @@
+// Every FPL manager, as fast as one IP politely can.
+//
+// Same endpoint, schema, and table as managers.vague. The difference is tuning:
+// that one is a small, deliberately gentle slice, this one runs at FPL's
+// measured single-IP ceiling. ~1.7M managers existed in July 2026, which lands
+// in roughly a quarter of an hour.
+//
+//   npm run cli mirror full -- --discover
+//
+// One host, no proxy pool. That's a deliberate choice, not a missing feature:
+// pacing under FPL's own per-IP allowance uses the limiter they published,
+// where fanning out across egress IPs to beat it routes around a control they
+// put there on purpose. See documentation/REQON.md.
+
+mission FplManagersFull {
+
+  source FPL {
+    auth: none,
+    base: "https://fantasy.premierleague.com/api",
+
+    headers: {
+      "User-Agent": env("FPL_USER_AGENT")
+    },
+
+    // Optional egress pool, rotated round-robin per request attempt, with the
+    // rate limit and circuit breaker below keyed per proxy - so each IP gets
+    // its own budget and one failing proxy opens only its own circuit.
+    //
+    // Leave all four unset and the mission runs direct, which is the default
+    // and what the measured numbers below describe. Setting only some is an
+    // error, not a shorter pool: the missing entries would concentrate the
+    // whole rate onto whichever resolved.
+    //
+    // Check a pool before trusting it: npm run cli mirror check-proxies
+    // One entry per relay we actually have. reqon errors on an entry that
+    // resolves empty, so this list and PROXY_ENV_VARS must match the pool
+    // exactly - adding a relay means adding a line here and a slot there.
+    // Padding the list by repeating a relay would double-weight that lane and
+    // spend its rate budget twice, which is the thing per-lane keying prevents.
+    proxy: [
+      env("FPL_PROXY_1"),
+      env("FPL_PROXY_2"),
+      env("FPL_PROXY_3")
+    ],
+
+    // Pinned to what FPL actually tolerates from one IP: it absorbs a burst of
+    // ~5,000-7,000, then sustains ~1,800/s before throttling in earnest.
+    // safety 0.9 paces just under. FPL sends no Retry-After, so a 429 is the
+    // only feedback there is - the model tightens this lane on one and eases
+    // back when they stop, which is what makes an imperfect guess survivable.
+    rateLimit: {
+      strategy: throttle,
+      maxWait: 300,
+      model: { type: tokenBucket, capacity: 5000, refill: 1800, safety: 0.9 }
+    },
+
+    // At ~1,600 req/s a short 429 burst during calibration is normal and must
+    // not trip the circuit. failureRate opens only on a sustained bad patch.
+    circuitBreaker: {
+      failureRate: 0.5,
+      minimumRequests: 200,
+      resetTimeout: 30,
+      failureWindow: 30
+    }
+  }
+
+  // Bigger batches than managers.vague because at this rate Supabase, not FPL,
+  // is the likely bottleneck: 1,000 rows per array POST is ~1,700 round-trips
+  // for the whole run instead of 3,400. Still `relaxed`, so writes never block
+  // the fan-out and the batch fills in the background.
+  //
+  // The batch block is load-bearing - see managers.vague for why dropping it
+  // silently stops inserting rows.
+  store managers: postgrest("fpl_managers") {
+    batch: { size: 1000, maxDelay: 5000, durability: relaxed }
+  }
+
+  store failures: file("fpl_manager_failures")
+
+  schema Manager {
+    id: number,
+    name: string,
+    first_name: string,
+    last_name: string,
+    region: string,
+    started_event: number,
+    overall_points: number,
+    overall_rank: number,
+    current_event: number,
+    event_points: number,
+    event_rank: number
+  }
+
+  action FetchManagers {
+    // The runner sets both bounds from validated options, so this is ids
+    // start..start+count-1. Don't set them by hand: env() coerces junk to 0.
+    //
+    // /entry/{id}/ embeds the manager's leagues, so it's a ~100ms round-trip.
+    // At concurrency 48 the socket count caps the run around 440 req/s, well
+    // under the model; 192 fills the latency pipe so the *model* governs, and
+    // it caps the rate regardless.
+    for id in range(env("FPL_MANAGER_RANGE_START"), env("FPL_MANAGER_RANGE_END")) concurrency 192 onError queue failures {
+
+      get "/entry/{id}/" {
+        source: FPL,
+        // Gaps and deleted entries are data, not something to retry.
+        allow: [404],
+        retry: {
+          maxAttempts: 3,
+          backoff: exponential,
+          initialDelay: 1000,
+          maxDelay: 30000
+        }
+      }
+
+      match response {
+        404 -> skip
+      }
+
+      map response -> Manager {
+        id: id,
+        name: .name,
+        first_name: .player_first_name,
+        last_name: .player_last_name,
+        region: .player_region_name,
+        started_event: .started_event,
+        overall_points: .summary_overall_points,
+        overall_rank: .summary_overall_rank,
+        current_event: .current_event,
+        event_points: .summary_event_points,
+        event_rank: .summary_event_rank
+      }
+
+      store response -> managers {
+        key: .id,
+        upsert: true
+      }
+    }
+  }
+
+  run FetchManagers
+}

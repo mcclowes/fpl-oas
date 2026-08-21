@@ -1,18 +1,21 @@
 # FPL API documentation
 
-Unofficial API documentation for the Fantasy Premier League (FPL) API, built with [OMG](https://omg.gs) and [Scalar](https://scalar.com).
+Unofficial OpenAPI documentation for the Fantasy Premier League API, authored in
+[OMG](https://omg.gs) and published with [Docusaurus](https://docusaurus.io) and
+[Speccy](https://github.com/mcclowes/speccy).
+
+Base URL: `https://fantasy.premierleague.com/api/`
 
 ## Overview
 
 The FPL API provides access to:
+
 - Player statistics and performance data
 - Team information and standings
 - Gameweek data and fixtures
 - Manager profiles and history
 - League standings and competitions
 - Live match data
-
-Base URL: `https://fantasy.premierleague.com/api/`
 
 ## Endpoints documented
 
@@ -38,83 +41,66 @@ Base URL: `https://fantasy.premierleague.com/api/`
 
 ## Local development
 
-### Prerequisites
-
-- Node.js 18+
-- npm
-
-### Setup
+Needs Node.js 20+.
 
 ```bash
 npm install
+npm run dev        # http://localhost:3000
+npm run build      # static site into build/
 ```
 
-### Development server
+The reference is at `/api`. The OpenAPI document is served at `/openapi.yaml`
+with permissive CORS, so tooling can fetch it directly, and the Speccy plugin
+republishes a copy at `/api/openapi.yaml`.
 
-```bash
-npm run dev
+## Editing the spec
+
+`static/openapi.yaml` is **generated**. Editing it directly will be overwritten.
+The sources are OMG markdown:
+
+```text
+api.omg.md            info, servers, security, tag definitions
+endpoints/*.omg.md    one file per endpoint
+types/*.omg.md        shared schemas
 ```
 
-Open http://localhost:5173
-
-### Build
-
 ```bash
-npm run build
+npm run lint        # lint the OMG sources
+npm run build:spec  # regenerate static/openapi.yaml
+npm run lint:spec   # Speccy API health rules over the generated document
+npm run diff:spec   # breaking-change diff against origin/main
 ```
 
-### Preview production build
+Commit the OMG source and the regenerated `static/openapi.yaml` together. See
+[docs/contributing.md](docs/contributing.md) for conventions.
 
-```bash
-npm run preview
+## Project structure
+
+```text
+api.omg.md            Main API configuration
+endpoints/            One file per endpoint (*.omg.md)
+types/                Shared schema definitions (*.omg.md)
+static/openapi.yaml   Built OpenAPI spec (committed)
+docs/                 Guides rendered alongside the reference
+examples/reqon/       Ingest missions showing the API used at volume
+src/                  Docusaurus landing page and theme CSS
+docusaurus.config.ts  Site and Speccy plugin configuration
 ```
 
 ## Deployment
 
-### Vercel
-
-1. Connect your repository to Vercel
-2. Deploy (config is in `vercel.json`)
-
-### Static hosting
-
-Upload the contents of the `dist` folder to any static hosting provider.
-
-## Project structure
-
-```
-fpl-oas/
-├── src/                     # React app source
-│   ├── App.tsx              # Scalar component wrapper
-│   ├── main.tsx             # Entry point
-│   └── index.css            # Minimal styles
-├── public/
-│   └── openapi.yaml         # Built OpenAPI spec (committed)
-├── api.omg.md               # Main API configuration
-├── endpoints/               # Individual endpoint definitions
-│   ├── bootstrap-static.omg.md
-│   ├── fixtures.omg.md
-│   └── ...
-├── types/                   # Shared type definitions
-│   ├── Player.omg.md
-│   ├── Team.omg.md
-│   └── ...
-├── dist/                    # Vite build output (gitignored)
-└── package.json
-```
+Vercel, configured in `vercel.json`. Any static host works — upload `build/`.
 
 ## Authentication
 
-Most endpoints are public. Some endpoints require authentication:
-- `/my-team/{manager_id}/`
-- `/me/`
-- `/entry/{manager_id}/transfers-latest/`
-
-Authentication is handled via session cookies from logging into fantasy.premierleague.com.
+Most endpoints are public. `/my-team/{manager_id}/`, `/me/`, and
+`/entry/{manager_id}/transfers-latest/` need session cookies from logging into
+fantasy.premierleague.com. See [docs/authentication.md](docs/authentication.md).
 
 ## Disclaimer
 
-This is unofficial, community-maintained documentation. The Premier League does not provide official API documentation, and endpoints may change without notice.
+This is unofficial, community-maintained documentation. The Premier League does
+not provide official API documentation, and endpoints may change without notice.
 
 ## Resources
 

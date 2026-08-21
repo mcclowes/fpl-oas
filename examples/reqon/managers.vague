@@ -1,0 +1,143 @@
+// Mirror FPL manager records into our Supabase `fpl_managers` table.
+//
+// The point of the mirror: FPL takes about an hour to publish final overall
+// ranks after a gameweek ends. Holding our own copy of every manager's standing
+// lets us compute and show a rank in minutes instead. This mission is the first
+// slice of that - the first 1,000 managers, pulled direct from one host.
+//
+//   npm run cli mirror managers
+//
+// To pull a different count, change the range bound below. Past a few tens of
+// thousands the polite thing is a proxy pool and a sharded fan-out - see
+// ../../documentation/REQON.md.
+
+mission FplManagers {
+
+  source FPL {
+    auth: none,
+    base: "https://fantasy.premierleague.com/api",
+
+    // The runner fills this in if it's unset, so a request always carries a
+    // real contact address rather than an empty User-Agent.
+    headers: {
+      "User-Agent": env("FPL_USER_AGENT")
+    },
+
+    // FPL sends no rate-limit headers, so pacing is entirely our job and a 429
+    // is the only feedback we get. `model` mirrors its token bucket locally:
+    // `capacity` requests burst through, then it settles to `refill`/second.
+    //
+    // Measured from one IP, FPL absorbs a burst of ~5,000-7,000 then sustains
+    // ~1,800/s. These numbers sit an order of magnitude under that - 1,000
+    // managers is a small enough job that there's no reason to lean on the
+    // limiter. A 429 tightens the pace automatically, so this can't run away.
+    rateLimit: {
+      strategy: throttle,
+      maxWait: 300,
+      model: { type: tokenBucket, capacity: 500, refill: 200, safety: 0.9 }
+    },
+
+    circuitBreaker: {
+      failureThreshold: 10,
+      resetTimeout: 60,
+      failureWindow: 60
+    }
+  }
+
+  // The runner replaces this with a Supabase-backed PostgREST adapter (reqon's
+  // own postgrest store has no way to learn our URL and service key), carrying
+  // the batch settings below across.
+  //
+  // `batch` is load-bearing, not just a throughput knob. Batched, an upsert
+  // flushes through bulkUpsert as one array POST with merge-duplicates - a real
+  // INSERT ... ON CONFLICT DO UPDATE. Unbatched, the same upsert is a bare
+  // PATCH ?id=eq.N, which matches nothing for a manager we haven't stored
+  // before and quietly inserts no row. Don't drop this block.
+  //
+  // `size` is rows per POST; `relaxed` lets the fan-out run at full speed and
+  // fill the batch in the background rather than each write awaiting its flush.
+  store managers: postgrest("fpl_managers") {
+    batch: { size: 250, maxDelay: 2000, durability: relaxed }
+  }
+
+  // Managers that exhaust their retries land here rather than failing the run,
+  // so one bad id doesn't cost us the other 999. Written to .reqon-data/.
+  store failures: file("fpl_manager_failures")
+
+  // Field names are the `fpl_managers` column names, so the mapped record is
+  // the row we upsert - no translation layer in between.
+  // (Every points/rank field is null out of season.)
+  schema Manager {
+    id: number,
+    name: string,
+    first_name: string,
+    last_name: string,
+    region: string,
+    started_event: number,
+    overall_points: number,
+    overall_rank: number,
+    // The gameweek standing. event_rank is the figure FPL takes an hour to
+    // publish; event_points lands well before it and is what we rank on.
+    current_event: number,
+    event_points: number,
+    event_rank: number
+  }
+
+  action FetchManagers {
+    // range() generates the ids in-mission - no id list to build first. The
+    // runner sets both bounds from validated options (--start, --count), so
+    // this reads ids start..start+count-1. Don't set them by hand: env()
+    // coerces junk to 0, which fetches nothing and still reports success.
+    //
+    // /entry/{id}/ embeds the manager's leagues, so it's a ~100ms round-trip;
+    // 24 in flight keeps the pipe full while staying well under the rate model,
+    // which caps the rate regardless. For the whole field at FPL's measured
+    // ceiling, use managers-full.vague instead.
+    for id in range(env("FPL_MANAGER_RANGE_START"), env("FPL_MANAGER_RANGE_END")) concurrency 24 onError queue failures {
+
+      get "/entry/{id}/" {
+        source: FPL,
+        // Low ids include managers that never existed. A 404 is data, not
+        // something to retry three times.
+        allow: [404],
+        retry: {
+          maxAttempts: 3,
+          backoff: exponential,
+          initialDelay: 1000,
+          maxDelay: 30000
+        }
+      }
+
+      // A status-only match falls through when no arm applies, so a 200 carries
+      // on to the map without needing a `_` arm.
+      match response {
+        404 -> skip
+      }
+
+      // `id` comes from the loop variable rather than the payload, so the key we
+      // upsert on is always the id we asked for.
+      map response -> Manager {
+        id: id,
+        name: .name,
+        first_name: .player_first_name,
+        last_name: .player_last_name,
+        region: .player_region_name,
+        started_event: .started_event,
+        overall_points: .summary_overall_points,
+        overall_rank: .summary_overall_rank,
+        current_event: .current_event,
+        event_points: .summary_event_points,
+        event_rank: .summary_event_rank
+      }
+
+      // `id` is the table's primary key, so this resolves to an ON CONFLICT
+      // update: a manager exists exactly once no matter how often we re-run.
+      store response -> managers {
+        key: .id,
+        upsert: true
+      }
+    }
+  }
+
+  run FetchManagers
+}
