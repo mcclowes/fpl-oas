@@ -1,0 +1,165 @@
+// Mirror FPL reference data into our Supabase `players`, `teams` and
+// `gameweeks` tables from the single `/bootstrap-static/` endpoint.
+//
+// This is the same architectural move the manager mirror made: the fetch that
+// keeps our reference tables fresh runs on reqon rather than a hand-rolled
+// loop. One request returns three arrays - elements (players), teams, events
+// (gameweeks) - and each is upserted on its FPL `id`, so re-running is safe and
+// never duplicates a row.
+//
+//   npm run cli mirror bootstrap
+//
+// The live routes already read these tables Supabase-first (see
+// pipeline/gameweek-fetcher.ts, lib/players/get-normalized-players.ts), so a
+// fresher table is a fresher app with no route changes.
+
+mission FplBootstrap {
+
+  // Same source block as managers.vague - a single request needs no separate
+  // tuning, and keeping it identical means the runner's FPL_USER_AGENT
+  // injection and the 429 handling behave exactly as they do there.
+  source FPL {
+    auth: none,
+    base: "https://fantasy.premierleague.com/api",
+
+    headers: {
+      "User-Agent": env("FPL_USER_AGENT")
+    },
+
+    rateLimit: {
+      strategy: throttle,
+      maxWait: 300,
+      model: { type: tokenBucket, capacity: 500, refill: 200, safety: 0.9 }
+    },
+
+    circuitBreaker: {
+      failureThreshold: 10,
+      resetTimeout: 60,
+      failureWindow: 60
+    }
+  }
+
+  // The runner replaces each `postgrest(...)` with a Supabase-backed adapter,
+  // carrying the batch settings across. `batch` is load-bearing, not a
+  // throughput knob: batched, an upsert flushes as one array POST with
+  // merge-duplicates (a real INSERT ... ON CONFLICT DO UPDATE); unbatched, the
+  // same upsert is a bare PATCH ?id=eq.N that matches nothing for a row we
+  // haven't stored and quietly inserts nothing. Don't drop these blocks.
+  //
+  // `teams` is written first and `durability: strict` makes its upsert flush
+  // before the players loop begins. players.team_id is a foreign key onto
+  // teams(id), so on a cold database the teams must land before the players
+  // that reference them. At ~20 rows the strict flush costs nothing.
+  store teams: postgrest("teams") {
+    batch: { size: 50, maxDelay: 2000, durability: strict }
+  }
+  store players: postgrest("players") {
+    batch: { size: 250, maxDelay: 2000, durability: relaxed }
+  }
+  store gameweeks: postgrest("gameweeks") {
+    batch: { size: 50, maxDelay: 2000, durability: relaxed }
+  }
+
+  // Field names are the target column names, so a mapped record is the row we
+  // upsert - no translation layer in between. Only columns that exist on each
+  // table are listed; the snapshot/prediction stats live in other tables and
+  // are out of this mission's scope.
+  schema Team {
+    id: number,
+    name: string,
+    short_name: string,
+    code: number,
+    strength: number,
+    strength_overall_home: number,
+    strength_overall_away: number,
+    strength_attack_home: number,
+    strength_attack_away: number,
+    strength_defence_home: number,
+    strength_defence_away: number
+  }
+
+  schema Player {
+    id: number,
+    first_name: string,
+    second_name: string,
+    web_name: string,
+    // FPL calls these `team` and `element_type`; our columns are `team_id` and
+    // `position_id`, which is why a map (rather than a raw array store) is used.
+    team_id: number,
+    position_id: number,
+    status: string,
+    code: number
+  }
+
+  schema Gameweek {
+    id: number,
+    name: string,
+    deadline_time: string,
+    is_previous: boolean,
+    is_current: boolean,
+    is_next: boolean,
+    finished: boolean
+  }
+
+  action FetchBootstrap {
+    get "/bootstrap-static/" {
+      source: FPL,
+      retry: {
+        maxAttempts: 3,
+        backoff: exponential,
+        initialDelay: 1000,
+        maxDelay: 30000
+      }
+    }
+
+    // Teams before players: players.team_id references teams(id). Each loop
+    // re-reads the fetched payload (`response` here is the bootstrap body); the
+    // per-iteration `map` overwrites `response` with the mapped row inside its
+    // own scope, so the next loop still sees the full payload.
+    for team in response.teams {
+      map team -> Team {
+        id: .id,
+        name: .name,
+        short_name: .short_name,
+        code: .code,
+        strength: .strength,
+        strength_overall_home: .strength_overall_home,
+        strength_overall_away: .strength_overall_away,
+        strength_attack_home: .strength_attack_home,
+        strength_attack_away: .strength_attack_away,
+        strength_defence_home: .strength_defence_home,
+        strength_defence_away: .strength_defence_away
+      }
+      store response -> teams { key: .id, upsert: true }
+    }
+
+    for element in response.elements {
+      map element -> Player {
+        id: .id,
+        first_name: .first_name,
+        second_name: .second_name,
+        web_name: .web_name,
+        team_id: .team,
+        position_id: .element_type,
+        status: .status,
+        code: .code
+      }
+      store response -> players { key: .id, upsert: true }
+    }
+
+    for event in response.events {
+      map event -> Gameweek {
+        id: .id,
+        name: .name,
+        deadline_time: .deadline_time,
+        is_previous: .is_previous,
+        is_current: .is_current,
+        is_next: .is_next,
+        finished: .finished
+      }
+      store response -> gameweeks { key: .id, upsert: true }
+    }
+  }
+
+  run FetchBootstrap
+}

@@ -2,27 +2,39 @@
   "name": "fpl-api-docs",
   "version": "1.0.0",
   "description": "Fantasy Premier League API documentation",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:spec": "omg build api.omg.md -o public/openapi.yaml",
+    "dev": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve",
+    "clear": "docusaurus clear",
+    "typecheck": "tsc --noEmit",
+    "build:spec": "omg build api.omg.md -o static/openapi.yaml",
     "lint": "omg lint endpoints/",
-    "preview": "vite preview"
+    "lint:spec": "speccy lint static/openapi.yaml",
+    "diff:spec": "speccy diff origin/main:static/openapi.yaml static/openapi.yaml"
   },
   "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@docusaurus/module-type-aliases": "^3.10.2",
+    "@docusaurus/tsconfig": "^3.10.2",
+    "@docusaurus/types": "^3.10.2",
     "omg-md-cli": "^0.1.0",
-    "typescript": "^5.3.0",
-    "vite": "^5.0.0"
+    "speccy-cli": "^0.12.0",
+    "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@scalar/api-reference-react": "^0.3.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "yjs": "^13.6.0"
+    "@docusaurus/core": "^3.10.2",
+    "@docusaurus/preset-classic": "^3.10.2",
+    "@mdx-js/react": "^3.0.0",
+    "docusaurus-plugin-speccy": "^0.12.0",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "_comment_overrides": "ajv 8.18+ generates code that Docusaurus's jiti module loader mis-parses, so loading the Speccy plugin (which pulls in Spectral) throws at config time. Pin Spectral's ajv until jiti handles it.",
+  "overrides": {
+    "@stoplight/spectral-core": { "ajv": "8.17.1" },
+    "@stoplight/spectral-functions": { "ajv": "8.17.1" },
+    "@stoplight/spectral-rulesets": { "ajv": "8.17.1" }
   },
   "keywords": [
     "fpl",
@@ -31,5 +43,8 @@
     "openapi",
     "documentation"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0"
+  }
 }

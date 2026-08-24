@@ -11,7 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-build:
+  spec:
+    name: Lint and build the spec
     runs-on: ubuntu-latest
 
     steps:
@@ -47,14 +48,36 @@ jobs:
 
       - name: Build OpenAPI spec
         working-directory: fpl-oas
-        run: node ../omg/packages/omg-md-cli/dist/cli.js build api.omg.md -o public/openapi.yaml
+        run: node ../omg/packages/omg-md-cli/dist/cli.js build api.omg.md -o static/openapi.yaml
 
-      - name: Verify spec was generated
+      # Reports drift rather than failing: the published omg-md-cli lags this
+      # repo's sources, so contributors cannot always regenerate locally.
+      - name: Report drift in the committed spec
         working-directory: fpl-oas
         run: |
-          if [ ! -f public/openapi.yaml ]; then
+          if [ ! -f static/openapi.yaml ]; then
             echo "Error: openapi.yaml was not generated"
             exit 1
           fi
-          echo "OpenAPI spec generated successfully"
-          head -20 public/openapi.yaml
+          if git diff --quiet -- static/openapi.yaml; then
+            echo "Committed spec matches the OMG sources."
+          else
+            echo "::warning::static/openapi.yaml differs from the OMG sources. Run 'npm run build:spec' and commit the result."
+            git diff --stat -- static/openapi.yaml
+          fi
+
+  site:
+    name: Build the site
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
