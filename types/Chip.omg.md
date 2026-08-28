@@ -7,10 +7,10 @@ A special chip that managers can use to boost their team.
 
 ```omg.type
 type ChipOverrides = {
-  rules: any,
-  scoring: any,
-  element_types: [any],
-  pick_multipliers: [any]
+  rules: any @description("Rule changes applied while the chip is active; shape varies by chip"),
+  scoring: any @description("Scoring changes applied by the chip; shape varies by chip"),
+  element_types: [any] @description("Position-rule overrides; entries have an undocumented, chip-specific shape"),
+  pick_multipliers: [any] @description("Squad-position multiplier overrides; entries have an undocumented, chip-specific shape")
 }
 ```
 

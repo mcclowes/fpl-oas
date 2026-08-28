@@ -19,14 +19,14 @@ type Team = {
   loss: integer @description("Matches lost"),
   points: integer @description("League points"),
   form: string? @description("Recent form string"),
-  team_division: integer?,
+  team_division: integer? @description("Internal division identifier, or null when the team has no division"),
   unavailable: boolean @description("Whether team data is unavailable"),
-  strength_overall_home: integer,
-  strength_overall_away: integer,
-  strength_attack_home: integer,
-  strength_attack_away: integer,
-  strength_defence_home: integer,
-  strength_defence_away: integer,
+  strength_overall_home: integer @description("Overall strength rating at home"),
+  strength_overall_away: integer @description("Overall strength rating away"),
+  strength_attack_home: integer @description("Attacking strength rating at home"),
+  strength_attack_away: integer @description("Attacking strength rating away"),
+  strength_defence_home: integer @description("Defensive strength rating at home"),
+  strength_defence_away: integer @description("Defensive strength rating away"),
   pulse_id: integer @description("External Pulse Sports ID")
 }
 ```

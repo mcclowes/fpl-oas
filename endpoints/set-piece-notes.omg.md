@@ -14,10 +14,10 @@ Returns information about set piece responsibilities for each team, including pe
   teams: [{
     id: integer @description("Team ID"),
     notes: [{
-      external_link: boolean,
+      external_link: boolean @description("Whether source_link points outside the Premier League website"),
       info_message: string @description("Set piece information"),
-      source_link: string?
-    }]
+      source_link: string? @description("Source URL for the note, or null when no source is supplied")
+    }] @description("Current set-piece notes published for the team")
   }]
 }
 ```

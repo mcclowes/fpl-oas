@@ -15,7 +15,7 @@
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "typecheck": "tsc --noEmit",
-    "build:spec": "omg build api.omg.md -o static/openapi.yaml",
+    "build:spec": "node scripts/build-spec.mjs api.omg.md static/openapi.yaml",
     "lint": "omg lint endpoints/",
     "lint:spec": "speccy lint static/openapi.yaml",
     "diff:spec": "speccy diff origin/main:static/openapi.yaml static/openapi.yaml",

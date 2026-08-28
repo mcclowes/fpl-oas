@@ -26,26 +26,26 @@ Returns a manager's team selection for a specific gameweek, including captain ch
     event: integer
   }] @description("Automatic substitutions made"),
   entry_history: {
-    event: integer,
-    points: integer,
-    total_points: integer,
-    rank: integer?,
-    rank_sort: integer?,
-    overall_rank: integer?,
-    percentile_rank: integer?,
-    bank: integer,
-    value: integer,
-    event_transfers: integer,
-    event_transfers_cost: integer,
-    points_on_bench: integer
-  },
+    event: integer @description("Gameweek number"),
+    points: integer @description("Net gameweek points after transfer costs"),
+    total_points: integer @description("Cumulative season points after this gameweek"),
+    rank: integer? @description("Gameweek rank, or null before ranks are calculated"),
+    rank_sort: integer? @description("Internal tie-breaking rank, or null before ranks are calculated"),
+    overall_rank: integer? @description("Overall rank after this gameweek, or null before ranks are calculated"),
+    percentile_rank: integer? @description("Overall-rank percentile bucket, or null before ranks are calculated"),
+    bank: integer @description("Unspent budget in 0.1m units at the deadline"),
+    value: integer @description("Squad value in 0.1m units at the deadline"),
+    event_transfers: integer @description("Transfers made for this gameweek"),
+    event_transfers_cost: integer @description("Points deducted for transfers"),
+    points_on_bench: integer @description("Points scored by players left on the bench")
+  } @description("Manager's score, rank, and squad value for this gameweek"),
   picks: [{
     element: integer @description("Player ID"),
     position: integer @description("Position 1-15 (1-11 starting, 12-15 bench)"),
     multiplier: integer @description("1=normal, 2=captain, 3=triple captain, 0=benched"),
-    is_captain: boolean,
-    is_vice_captain: boolean
-  }]
+    is_captain: boolean @description("Whether the player was selected as captain"),
+    is_vice_captain: boolean @description("Whether the player was selected as vice-captain")
+  }] @description("Ordered 15-player squad at the gameweek deadline")
 }
 ```
 
