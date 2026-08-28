@@ -10,3 +10,10 @@ export {
   type H2HLeagueFilters,
 } from "./client.js";
 export type { components, operations, paths } from "./schema.gen.js";
+export {
+  createPolicyFetch,
+  type CachePolicy,
+  type RateLimitPolicy,
+  type RetryPolicy,
+  type TransportPolicies,
+} from "./transport.js";

@@ -1,6 +1,7 @@
 import createClient, { type Client, type ClientOptions } from "openapi-fetch";
 
 import type { paths } from "./schema.gen.js";
+import { createPolicyFetch, type TransportPolicies } from "./transport.js";
 
 export const FPL_API_BASE_URL = "https://fantasy.premierleague.com/api";
 
@@ -8,6 +9,8 @@ export type FplClient = Client<paths>;
 export type FplClientOptions = Omit<ClientOptions, "baseUrl"> & {
   /** Override the FPL API URL, for example when using a proxy or test server. */
   baseUrl?: string;
+  /** Opt-in retry, request pacing, and response caching. */
+  policies?: TransportPolicies;
 };
 
 export interface FixtureFilters {
@@ -27,12 +30,20 @@ export interface H2HLeagueFilters {
 
 /** Create an isolated, fully typed FPL API client. */
 export function createFplClient(options: FplClientOptions = {}): FplClient {
-  const { baseUrl = FPL_API_BASE_URL, ...fetchOptions } = options;
+  const {
+    baseUrl = FPL_API_BASE_URL,
+    fetch = globalThis.fetch,
+    policies,
+    ...fetchOptions
+  } = options;
 
   return createClient<paths>({
     credentials: "include",
     ...fetchOptions,
     baseUrl,
+    fetch: policies
+      ? createPolicyFetch(fetch as typeof globalThis.fetch, policies)
+      : fetch,
   });
 }
 

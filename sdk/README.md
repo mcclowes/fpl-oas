@@ -27,6 +27,25 @@ the OpenAPI document. The package also exports `paths`, `operations`, and
 Every operation has a named helper. The underlying `openapi-fetch` client remains
 available as `fpl.client` for per-request options and direct path-based calls.
 
+## Transport policies
+
+Retries, pacing, and caching are opt-in. Policies apply to one client instance;
+create separate clients when callers shouldn't share a rate limit or cache.
+
+```ts
+const fpl = createFplSdk({
+  policies: {
+    retry: { attempts: 3 },
+    rateLimit: { requestsPerSecond: 2 },
+    cache: { ttlMs: 60_000, maxEntries: 100 },
+  },
+});
+```
+
+Only `GET` and `HEAD` requests are retried. The client honors `Retry-After` and
+otherwise uses bounded exponential backoff. The cache only stores successful
+`GET` responses and respects `Cache-Control: no-store`.
+
 ## Authentication
 
 The client uses `credentials: "include"` by default. Browser code still can't call
