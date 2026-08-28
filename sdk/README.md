@@ -46,6 +46,19 @@ Only `GET` and `HEAD` requests are retried. The client honors `Retry-After` and
 otherwise uses bounded exponential backoff. The cache only stores successful
 `GET` responses and respects `Cache-Control: no-store`.
 
+## Runtime validation
+
+Set `validateResponses: true` to validate documented JSON responses against the
+OpenAPI schemas. Validation is off by default because it adds runtime work.
+
+```ts
+const fpl = createFplSdk({ validateResponses: true });
+```
+
+Invalid responses throw `FplResponseValidationError`, which includes the method,
+OAS path, HTTP status, and JSON Schema validation issues. Responses without a
+documented schema pass through unchanged.
+
 ## Authentication
 
 The client uses `credentials: "include"` by default. Browser code still can't call

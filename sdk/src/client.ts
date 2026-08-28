@@ -2,6 +2,7 @@ import createClient, { type Client, type ClientOptions } from "openapi-fetch";
 
 import type { paths } from "./schema.gen.js";
 import { createPolicyFetch, type TransportPolicies } from "./transport.js";
+import { createValidationFetch } from "./validation.js";
 
 export const FPL_API_BASE_URL = "https://fantasy.premierleague.com/api";
 
@@ -11,6 +12,8 @@ export type FplClientOptions = Omit<ClientOptions, "baseUrl"> & {
   baseUrl?: string;
   /** Opt-in retry, request pacing, and response caching. */
   policies?: TransportPolicies;
+  /** Validate documented JSON responses against the OAS at runtime. */
+  validateResponses?: boolean;
 };
 
 export interface FixtureFilters {
@@ -34,16 +37,21 @@ export function createFplClient(options: FplClientOptions = {}): FplClient {
     baseUrl = FPL_API_BASE_URL,
     fetch = globalThis.fetch,
     policies,
+    validateResponses = false,
     ...fetchOptions
   } = options;
+
+  const transportFetch = policies
+    ? createPolicyFetch(fetch as typeof globalThis.fetch, policies)
+    : fetch;
 
   return createClient<paths>({
     credentials: "include",
     ...fetchOptions,
     baseUrl,
-    fetch: policies
-      ? createPolicyFetch(fetch as typeof globalThis.fetch, policies)
-      : fetch,
+    fetch: validateResponses
+      ? createValidationFetch(transportFetch as typeof globalThis.fetch)
+      : transportFetch,
   });
 }
 

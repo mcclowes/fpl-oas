@@ -17,3 +17,8 @@ export {
   type RetryPolicy,
   type TransportPolicies,
 } from "./transport.js";
+export {
+  createValidationFetch,
+  FplResponseValidationError,
+  type ResponseValidationIssue,
+} from "./validation.js";
