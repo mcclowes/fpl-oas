@@ -38,8 +38,8 @@ types/*.omg.md        shared schemas: Player, Team, Event, Fixture, Manager, ...
 
 - Path parameters: `{manager_id}`, `{element_id}`, `{event_id}`, `{league_id}`
 - Every documented endpoint is a `GET`
-- Authenticated endpoints: `/me/`, `/my-team/{manager_id}/`,
-  `/entry/{manager_id}/transfers-latest/`
+- Authenticated endpoints: `/my-team/{manager_id}/` and
+  `/entry/{manager_id}/transfers-latest/`; `/me/` accepts optional authentication
 
 ## What good coverage looks like
 

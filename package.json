@@ -1,17 +1,28 @@
 {
-  "name": "fpl-api-docs",
+  "name": "@mcclowes/fpl-api-spec",
   "version": "1.0.0",
-  "description": "Fantasy Premier League API documentation",
+  "description": "Unofficial OpenAPI specification for the Fantasy Premier League API",
+  "files": [
+    "static/openapi.yaml"
+  ],
+  "exports": {
+    ".": "./static/openapi.yaml",
+    "./openapi.yaml": "./static/openapi.yaml"
+  },
   "scripts": {
     "dev": "docusaurus start",
     "build": "docusaurus build",
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "typecheck": "tsc --noEmit",
-    "build:spec": "omg build api.omg.md -o static/openapi.yaml",
+    "build:spec": "node scripts/build-spec.mjs api.omg.md static/openapi.yaml",
     "lint": "omg lint endpoints/",
     "lint:spec": "speccy lint static/openapi.yaml",
-    "diff:spec": "speccy diff origin/main:static/openapi.yaml static/openapi.yaml"
+    "diff:spec": "speccy diff origin/main:static/openapi.yaml static/openapi.yaml",
+    "check:package": "npm pack --dry-run",
+    "generate:sdk": "npm --prefix sdk run generate",
+    "build:sdk": "npm --prefix sdk run build",
+    "check:sdk": "npm --prefix sdk run check"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.2",
@@ -44,6 +55,14 @@
     "documentation"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcclowes/fpl-oas.git"
+  },
+  "homepage": "https://github.com/mcclowes/fpl-oas#readme",
+  "bugs": {
+    "url": "https://github.com/mcclowes/fpl-oas/issues"
+  },
   "engines": {
     "node": ">=20.0"
   }

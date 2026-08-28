@@ -15,6 +15,10 @@ Returns live points and statistics for all players in a specific gameweek. This 
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.response
 {
   elements: [{

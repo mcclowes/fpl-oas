@@ -1,0 +1,41 @@
+{
+  "name": "@mcclowes/fpl-api-client",
+  "version": "2025.1.0",
+  "description": "Type-safe TypeScript client for the Fantasy Premier League API",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "generate": "openapi-typescript ../static/openapi.yaml --output src/schema.gen.ts --alphabetize && node scripts/generate-runtime-schema.mjs",
+    "build": "tsup",
+    "prepack": "npm run check",
+    "test": "vitest run",
+    "check:generated": "npm run generate && git diff --exit-code -- src/schema.gen.ts src/runtime-schema.gen.json",
+    "check": "npm run check:generated && tsc --noEmit && npm test && npm run build"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "openapi-fetch": "^0.15.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.9.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "yaml": "^2.8.1"
+  },
+  "engines": { "node": ">=20.0" },
+  "publishConfig": { "access": "public" }
+}

@@ -15,6 +15,10 @@ Returns all transfers made by a manager in the current season.
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.response
 [{
   element_in: integer @description("Player bought ID"),

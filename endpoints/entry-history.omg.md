@@ -15,6 +15,10 @@ Returns a manager's historical performance data including gameweek scores, chip 
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.response
 {
   current: [{

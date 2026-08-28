@@ -21,11 +21,11 @@ tags:
 
 # Fantasy Premier League API
 
-The official Fantasy Premier League game API provides comprehensive data about the English Premier League fantasy football game.
+This unofficial specification documents the API used by the official Fantasy Premier League website. Use it to read players, clubs, fixtures, gameweeks, managers, leagues, picks, transfers, and live scores. The upstream API is undocumented and may change without notice.
 
 ## Base URL
 
-All endpoints use the base URL: `https://fantasy.premierleague.com/api/`
+Send requests to `https://fantasy.premierleague.com/api/`. IDs are numeric and shared across related endpoints: `element` means player, `entry` means manager, and `event` means gameweek. Money values are usually integers in tenths of a million pounds, so `now_cost: 75` means £7.5m. Decimal statistics are often returned as strings.
 
 ## Authentication
 

@@ -19,6 +19,10 @@ Returns detailed information about a specific FPL manager, including their overa
 Manager
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.example
 {
   "id": 1234567,

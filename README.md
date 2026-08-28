@@ -6,6 +6,24 @@ Unofficial OpenAPI documentation for the Fantasy Premier League API, authored in
 
 Base URL: `https://fantasy.premierleague.com/api/`
 
+## npm package
+
+The generated OpenAPI document is published as `@mcclowes/fpl-api-spec`:
+
+```bash
+npm install @mcclowes/fpl-api-spec
+```
+
+Resolve the YAML file from Node.js without depending on the package's internal
+directory layout:
+
+```js
+const openapiPath = require.resolve('@mcclowes/fpl-api-spec/openapi.yaml');
+```
+
+Tools that accept package-relative paths can use
+`node_modules/@mcclowes/fpl-api-spec/static/openapi.yaml` directly.
+
 ## Overview
 
 The FPL API provides access to:
@@ -33,9 +51,13 @@ The FPL API provides access to:
 | [`/leagues-h2h-matches/league/{league_id}/`](endpoints/leagues-h2h.omg.md) | H2H league matches |
 | [`/event-status/`](endpoints/event-status.omg.md) | Gameweek status |
 | [`/dream-team/{event_id}/`](endpoints/dream-team.omg.md) | Dream team for gameweek |
+| [`/dream-team/`](endpoints/season-dream-team.omg.md) | Dream team for the season to date |
+| [`/regions/`](endpoints/regions.omg.md) | Manager profile regions and countries |
 | [`/team/set-piece-notes/`](endpoints/set-piece-notes.omg.md) | Set piece taker info |
 | [`/my-team/{manager_id}/`](endpoints/my-team.omg.md) | Authenticated user's team |
-| [`/me/`](endpoints/me.omg.md) | Authenticated user profile |
+| [`/me/`](endpoints/me.omg.md) | Current user profile (session optional) |
+| [`/entry/{manager_id}/transfers-latest/`](endpoints/entry-transfers-latest.omg.md) | Authenticated user's current-gameweek transfers |
+| [`/stats/best-classic-private-leagues/`](endpoints/best-classic-private-leagues.omg.md) | Highest-scoring private classic leagues |
 | [`/stats/most-valuable-teams/`](endpoints/most-valuable-teams.omg.md) | Most valuable teams |
 | [`/league/{league_id}/cup-status/`](endpoints/cup-status.omg.md) | League cup status |
 
@@ -52,6 +74,17 @@ npm run build      # static site into build/
 The reference is at `/api`. The OpenAPI document is served at `/openapi.yaml`
 with permissive CORS, so tooling can fetch it directly, and the Speccy plugin
 republishes a copy at `/api/openapi.yaml`.
+
+## TypeScript client
+
+The generated client lives in [`sdk/`](sdk/README.md). It provides a strict,
+Fetch-based API with types generated from the committed OpenAPI document.
+
+```bash
+npm --prefix sdk install
+npm run generate:sdk
+npm run check:sdk
+```
 
 ## Editing the spec
 
@@ -91,11 +124,18 @@ docusaurus.config.ts  Site and Speccy plugin configuration
 
 Vercel, configured in `vercel.json`. Any static host works — upload `build/`.
 
+The first version must be published locally with `npm publish --access public`.
+Once the package exists on npm, configure its trusted publisher for the
+`mcclowes/fpl-oas` repository and `publish-npm.yml` workflow. Later GitHub
+Releases will publish through OIDC, without an npm token. The release tag must
+match the version in `package.json`, prefixed with `v`, such as `v1.0.0`.
+
 ## Authentication
 
-Most endpoints are public. `/my-team/{manager_id}/`, `/me/`, and
+Most endpoints are public. `/my-team/{manager_id}/` and
 `/entry/{manager_id}/transfers-latest/` need session cookies from logging into
-fantasy.premierleague.com. See [docs/authentication.md](docs/authentication.md).
+fantasy.premierleague.com. `/me/` accepts a session but returns an anonymous
+response without one. See [docs/authentication.md](docs/authentication.md).
 
 ## Disclaimer
 
