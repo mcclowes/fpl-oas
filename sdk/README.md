@@ -11,12 +11,10 @@ npm install @mcclowes/fpl-api-client
 ## Use
 
 ```ts
-import { createFplClient } from "@mcclowes/fpl-api-client";
+import { createFplSdk } from "@mcclowes/fpl-api-client";
 
-const fpl = createFplClient();
-const { data, error, response } = await fpl.GET("/element-summary/{element_id}/", {
-  params: { path: { element_id: 351 } },
-});
+const fpl = createFplSdk();
+const { data, error, response } = await fpl.getPlayerSummary(351);
 
 if (error) throw new Error(`FPL returned ${response.status}`);
 console.log(data.fixtures);
@@ -25,6 +23,9 @@ console.log(data.fixtures);
 Paths, parameters, successful responses, and documented errors are inferred from
 the OpenAPI document. The package also exports `paths`, `operations`, and
 `components` for code that only needs schema types.
+
+Every operation has a named helper. The underlying `openapi-fetch` client remains
+available as `fpl.client` for per-request options and direct path-based calls.
 
 ## Authentication
 

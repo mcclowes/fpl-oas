@@ -13,9 +13,9 @@ export interface paths {
         };
         /**
          * Get bootstrap static data
-         * @description Returns comprehensive static data for the current FPL season, including all players, teams, gameweeks, game settings, and more. This is the primary endpoint for initial data loading.
+         * @description Returns the current season's main reference data in one large response: every player, club, gameweek, position, chip, scoring phase, and game setting.
          *
-         *     This endpoint provides everything needed to render the main FPL interface and should be cached appropriately as it contains a large payload.
+         *     Fetch this first when building an FPL client. Join its numeric IDs to other endpoints, and cache the response rather than downloading it before every request. Player prices and gameweek state change regularly, so refresh it when your application needs current data.
          */
         get: operations["getBootstrapStatic"];
         put?: never;
@@ -317,7 +317,7 @@ export interface paths {
         };
         /**
          * Get authenticated user
-         * @description Returns profile information for the currently authenticated user.
+         * @description Returns the account profile and manager ID associated with the current FPL session. Use `player.entry` to call manager-specific endpoints.
          *
          *     **Requires authentication via FPL session cookie.**
          */
@@ -339,7 +339,7 @@ export interface paths {
         };
         /**
          * Get my team
-         * @description Returns the authenticated manager's current team, including players, chips available, and recent transfers.
+         * @description Returns the authenticated manager's editable 15-player squad, chip availability, and transfer budget for the current gameweek. Unlike the public picks endpoint, prices are specific to this manager and reflect purchase and sale values.
          *
          *     **Requires authentication via FPL session cookie.**
          */
@@ -437,119 +437,218 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Chip: {
-            /** @enum {string} */
+            /**
+             * @description Whether chip affects transfers or team selection
+             * @enum {string}
+             */
             chip_type: "transfer" | "team";
+            /** @description Unique chip identifier */
             id: number;
-            /** @enum {string} */
+            /**
+             * @description Chip type identifier
+             * @enum {string}
+             */
             name: "wildcard" | "freehit" | "bboost" | "3xc" | "manager";
+            /** @description Number of this chip type available per season */
             number: number;
+            /** @description Rule overrides when chip is active */
             overrides: components["schemas"]["ChipOverrides"];
+            /** @description First gameweek chip can be used */
             start_event: number;
+            /** @description Last gameweek chip can be used */
             stop_event: number;
         };
         ChipOverrides: {
+            /** @description Position-rule overrides; entries have an undocumented, chip-specific shape */
             element_types: unknown[];
+            /** @description Squad-position multiplier overrides; entries have an undocumented, chip-specific shape */
             pick_multipliers: unknown[];
+            /** @description Rule changes applied while the chip is active; shape varies by chip */
             rules: unknown;
+            /** @description Scoring changes applied by the chip; shape varies by chip */
             scoring: unknown;
         };
         ChipPlay: {
+            /** @description Chip identifier */
             chip_name: string;
+            /** @description Number of managers who played the chip in this gameweek */
             num_played: number;
         };
         ElementType: {
+            /** @description Total players of this position */
             element_count: number;
+            /** @description 1=GKP, 2=DEF, 3=MID, 4=FWD */
             id: number;
+            /** @description Full plural name (e.g., 'Goalkeepers') */
             plural_name: string;
+            /** @description Short plural name (e.g., 'GKP') */
             plural_name_short: string;
+            /** @description Full singular name (e.g., 'Goalkeeper') */
             singular_name: string;
+            /** @description Short singular name (e.g., 'GKP') */
             singular_name_short: string;
+            /** @description Maximum that can play */
             squad_max_play: number;
+            /** @description Maximum number allowed in a squad, or null when there is no separate limit */
             squad_max_select?: number;
+            /** @description Minimum that must play */
             squad_min_play: number;
+            /** @description Minimum number allowed in a squad, or null when there is no separate limit */
             squad_min_select?: number;
+            /** @description Number required in squad */
             squad_select: number;
+            /** @description Locked substitute positions */
             sub_positions_locked: number[];
+            /** @description Whether the UI should use a position-specific shirt image */
             ui_shirt_specific: boolean;
         };
         Event: {
+            /** @description Average points scored by all managers */
             average_entry_score: number;
+            /** @description Whether new entries are allowed */
             can_enter: boolean;
+            /** @description Whether team changes are allowed */
             can_manage: boolean;
+            /** @description Chips used this gameweek */
             chip_plays: components["schemas"]["ChipPlay"][];
+            /** @description Whether cup leagues have been created for this gameweek */
             cup_leagues_created: boolean;
+            /** @description Whether data has been verified */
             data_checked: boolean;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description ISO 8601 deadline timestamp
+             */
             deadline_time: string;
+            /** @description Unix timestamp of deadline */
             deadline_time_epoch: number;
+            /** @description Internal offset between the gameweek deadline and the first fixture */
             deadline_time_game_offset: number;
+            /** @description Whether gameweek has finished */
             finished: boolean;
+            /** @description Whether head-to-head knockout matches have been created */
             h2h_ko_matches_created: boolean;
+            /** @description Highest score achieved */
             highest_score?: number;
+            /** @description Manager ID with highest score */
             highest_scoring_entry?: number;
+            /** @description Gameweek number */
             id: number;
+            /** @description Whether this is the current gameweek */
             is_current: boolean;
+            /** @description Whether this is the next scheduled gameweek */
             is_next: boolean;
+            /** @description Whether this is the most recently completed gameweek */
             is_previous: boolean;
+            /** @description Most captained player ID */
             most_captained?: number;
+            /** @description Most selected player ID */
             most_selected?: number;
+            /** @description Most transferred in player ID */
             most_transferred_in?: number;
+            /** @description Most vice-captained player ID */
             most_vice_captained?: number;
+            /** @description Display name (e.g., 'Gameweek 1') */
             name: string;
+            /** @description Number of ranked managers */
             ranked_count: number;
+            /**
+             * Format: date-time
+             * @description Time the gameweek became available, or null if it has not been released
+             */
             release_time?: string;
+            /** @description Whether the gameweek is visible and available in the game */
             released: boolean;
+            /** @description Top scoring player ID */
             top_element?: number;
+            /** @description Top scorer details */
             top_element_info?: components["schemas"]["TopElementInfo"];
+            /** @description Total transfers made */
             transfers_made: number;
         };
         Fixture: {
+            /** @description External fixture code */
             code: number;
+            /** @description Gameweek number (null if unscheduled) */
             event?: number;
+            /** @description Whether the fixture is complete and its result is final */
             finished: boolean;
+            /** @description Whether play has ended but the result or statistics may still change */
             finished_provisional: boolean;
+            /** @description Unique fixture identifier */
             id: number;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Scheduled kickoff time, or null when the fixture has not been scheduled
+             */
             kickoff_time?: string;
+            /** @description Minutes played */
             minutes: number;
+            /** @description Whether the kickoff time is provisional */
             provisional_start_time: boolean;
+            /** @description Fixture ID in the Premier League's Pulse data service */
             pulse_id: number;
+            /** @description Whether the fixture has kicked off; may be null before the gameweek is prepared */
             started?: boolean;
+            /** @description Match statistics (goals, assists, etc.) */
             stats: components["schemas"]["FixtureStat"][];
+            /** @description Away team ID */
             team_a: number;
+            /** @description Away team FDR */
             team_a_difficulty: number;
+            /** @description Away team goals */
             team_a_score?: number;
+            /** @description Home team ID */
             team_h: number;
+            /** @description Home team FDR */
             team_h_difficulty: number;
+            /** @description Home team goals */
             team_h_score?: number;
         };
         FixtureStat: {
+            /** @description Away players credited with this statistic */
             a: components["schemas"]["FixtureStatA"][];
+            /** @description Home players credited with this statistic */
             h: components["schemas"]["FixtureStatH"][];
+            /** @description Statistic name, such as goals_scored, assists, or bonus */
             identifier: string;
         };
         FixtureStatA: {
+            /** @description Away player ID */
             element: number;
+            /** @description Statistic value */
             value: number;
         };
         FixtureStatH: {
+            /** @description Home player ID */
             element: number;
+            /** @description Statistic value */
             value: number;
         };
         GetBootstrapStaticResponse200Elementstat: {
+            /** @description Display label */
             label: string;
+            /** @description API field name */
             name: string;
         };
         GetBootstrapStaticResponse200Phase: {
+            /** @description Highest phase score, or null before the phase has scores */
             highest_score?: number;
+            /** @description Scoring phase ID */
             id: number;
+            /** @description Phase name (e.g., 'Overall', 'August') */
             name: string;
+            /** @description First gameweek included in the phase */
             start_event: number;
+            /** @description Last gameweek included in the phase */
             stop_event: number;
         };
         GetDreamTeamResponse200Team: {
+            /** @description Player ID */
             element: number;
+            /** @description Points scored in gameweek */
             points: number;
+            /** @description Position in dream team (1-11) */
             position: number;
         };
         GetElementSummaryResponse200Fixture: {
@@ -628,6 +727,7 @@ export interface components {
             penalties_saved: number;
             red_cards: number;
             saves: number;
+            /** @description Season identifier (e.g., '2023/24') */
             season_name: string;
             start_cost: number;
             starts: number;
@@ -636,45 +736,70 @@ export interface components {
             yellow_cards: number;
         };
         GetEntryHistoryResponse200Chip: {
+            /** @description Gameweek chip was used */
             event: number;
+            /** @description Chip name */
             name: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description When chip was activated
+             */
             time: string;
         };
         GetEntryHistoryResponse200Current: {
+            /** @description Remaining budget in 0.1m units */
             bank: number;
+            /** @description Gameweek number */
             event: number;
+            /** @description Transfers made */
             event_transfers: number;
+            /** @description Transfer cost (points) */
             event_transfers_cost: number;
+            /** @description Overall rank after this gameweek */
             overall_rank: number;
             percentile_rank?: number;
+            /** @description Points scored */
             points: number;
+            /** @description Points left on bench */
             points_on_bench: number;
+            /** @description Gameweek rank */
             rank: number;
             rank_sort: number;
+            /** @description Cumulative points */
             total_points: number;
+            /** @description Squad value in 0.1m units */
             value: number;
         };
         GetEntryHistoryResponse200Past: {
             rank: number;
+            /** @description Season identifier (e.g., '2023/24') */
             season_name: string;
             total_points: number;
         };
         GetEntryPicksResponse200Automaticsub: {
+            /** @description Player subbed on */
             element_in: number;
+            /** @description Player subbed off */
             element_out: number;
             entry: number;
             event: number;
         };
         GetEntryPicksResponse200Pick: {
+            /** @description Player ID */
             element: number;
+            /** @description Whether the player was selected as captain */
             is_captain: boolean;
+            /** @description Whether the player was selected as vice-captain */
             is_vice_captain: boolean;
+            /** @description 1=normal, 2=captain, 3=triple captain, 0=benched */
             multiplier: number;
+            /** @description Position 1-15 (1-11 starting, 12-15 bench) */
             position: number;
         };
         GetEventLiveResponse200Element: {
+            /** @description Points breakdown by fixture and stat */
             explain: components["schemas"]["GetEventLiveResponse200ElementExplain"][];
+            /** @description Player ID */
             id: number;
             stats: {
                 assists: number;
@@ -713,10 +838,16 @@ export interface components {
             value: number;
         };
         GetEventStatusResponse200Statu: {
+            /** @description Whether bonus points have been added */
             bonus_added: boolean;
+            /** @description Date in YYYY-MM-DD format */
             date: string;
+            /** @description Gameweek number */
             event: number;
-            /** @enum {string} */
+            /**
+             * @description r=ready/finalized, l=live/provisional
+             * @enum {string}
+             */
             points: "r" | "l";
         };
         GetLeagueClassicStandingsResponse200NewentriesResult: {
@@ -729,28 +860,37 @@ export interface components {
             player_last_name: string;
         };
         GetLeagueClassicStandingsResponse200StandingsResult: {
+            /** @description Manager ID */
             entry: number;
+            /** @description Team name */
             entry_name: string;
+            /** @description Points this gameweek */
             event_total: number;
             id: number;
             last_rank: number;
             player_name: string;
             rank: number;
             rank_sort: number;
+            /** @description Total points */
             total: number;
         };
         GetLeagueH2HMatchesResponse200Result: {
             entry_1_draw: number;
+            /** @description First manager ID */
             entry_1_entry: number;
             entry_1_loss: number;
+            /** @description First team name */
             entry_1_name: string;
             entry_1_player_name: string;
             entry_1_points: number;
+            /** @description Total league points */
             entry_1_total: number;
             entry_1_win: number;
             entry_2_draw: number;
+            /** @description Second manager ID */
             entry_2_entry: number;
             entry_2_loss: number;
+            /** @description Second team name */
             entry_2_name: string;
             entry_2_player_name: string;
             entry_2_points: number;
@@ -767,219 +907,427 @@ export interface components {
             winner?: number;
         };
         GetMyTeamResponse200Chip: {
+            /** @description Whether the chip changes transfers or team scoring */
             chip_type: string;
+            /** @description Chip identifier */
             name: string;
+            /** @description Chip instance number when a chip can be offered more than once */
             number: number;
+            /** @description Gameweeks in which this manager played the chip */
             played_by_entry: number[];
+            /** @description First gameweek in which the chip can be played */
             start_event: number;
-            /** @enum {string} */
+            /**
+             * @description Whether this manager can still play the chip
+             * @enum {string}
+             */
             status_for_entry: "available" | "played" | "unavailable";
+            /** @description Last gameweek in which the chip can be played */
             stop_event: number;
         };
         GetMyTeamResponse200Pick: {
+            /** @description Player ID */
             element: number;
+            /** @description Whether the player is the current captain */
             is_captain: boolean;
+            /** @description Whether the player is the current vice-captain */
             is_vice_captain: boolean;
+            /** @description Points multiplier: 2 for captain, 3 for triple captain, 1 otherwise */
             multiplier: number;
+            /** @description Squad position (1-15) */
             position: number;
+            /** @description Purchase price in 0.1m units */
             purchase_price: number;
+            /** @description Sale price in 0.1m units */
             selling_price: number;
         };
         GetSeasonDreamTeamResponse200Team: {
+            /** @description Player ID */
             element: number;
+            /** @description Total points scored this season */
             points: number;
+            /** @description Position in dream team (1-11) */
             position: number;
         };
         GetSetPieceNotesResponse200Team: {
+            /** @description Team ID */
             id: number;
+            /** @description Current set-piece notes published for the team */
             notes: components["schemas"]["GetSetPieceNotesResponse200TeamNote"][];
         };
         GetSetPieceNotesResponse200TeamNote: {
+            /** @description Whether source_link points outside the Premier League website */
             external_link: boolean;
+            /** @description Set piece information */
             info_message: string;
+            /** @description Source URL for the note, or null when no source is supplied */
             source_link?: string;
         };
         Manager: {
+            /** @description Current gameweek */
             current_event: number;
+            /** @description Supported team ID */
             favourite_team?: number;
+            /** @description Unique manager/entry ID */
             id: number;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Time the manager registered for FPL
+             */
             joined_time: string;
+            /** @description Team kit code */
             kit?: string;
+            /** @description Bank balance at last deadline */
             last_deadline_bank: number;
+            /** @description Season transfer count at the most recent gameweek deadline */
             last_deadline_total_transfers: number;
+            /** @description Squad value at last deadline */
             last_deadline_value: number;
+            /** @description League memberships and cup participation */
             leagues: {
+                /** @description Classic-scoring leagues the manager belongs to */
                 classic: components["schemas"]["ManagerLeague"][];
+                /** @description Overall FPL cup qualification details */
                 cup: components["schemas"]["ManagerCupStatus"];
+                /** @description FPL cup matches; entries have an undocumented shape */
                 cup_matches: unknown[];
+                /** @description Head-to-head leagues the manager belongs to */
                 h2h: components["schemas"]["ManagerLeague"][];
             };
+            /** @description Team name */
             name: string;
+            /** @description Whether the manager is currently prevented from changing the team name */
             name_change_blocked: boolean;
+            /** @description Manager's first name */
             player_first_name: string;
+            /** @description Manager's last name */
             player_last_name: string;
+            /** @description Manager's region ID */
             player_region_id: number;
+            /** @description Manager region's ISO 3166-1 alpha-3 code */
             player_region_iso_code_long: string;
+            /** @description Manager region's ISO 3166-1 alpha-2 code */
             player_region_iso_code_short: string;
+            /** @description Manager's region name */
             player_region_name: string;
+            /** @description First gameweek played */
             started_event: number;
+            /** @description Points in current gameweek */
             summary_event_points: number;
+            /** @description Rank in current gameweek */
             summary_event_rank?: number;
+            /** @description Total points this season */
             summary_overall_points: number;
+            /** @description Overall rank */
             summary_overall_rank: number;
         };
         ManagerCupStatus: {
+            /** @description Gameweek used for cup qualification, or null before it is scheduled */
             qualification_event?: number;
+            /** @description Number of managers who qualify, or null before qualification is configured */
             qualification_numbers?: number;
+            /** @description Manager's qualification rank, or null before qualification is calculated */
             qualification_rank?: number;
+            /** @description Cup qualification state, or null when the league has no active cup */
             qualification_state?: string;
         };
         ManagerLeague: {
+            /** @description Manager ID of the league administrator, or null when FPL administers the league */
             admin_entry?: number;
+            /** @description Whether new managers can no longer join */
             closed: boolean;
+            /**
+             * Format: date-time
+             * @description Time the league was created
+             */
             created: string;
+            /** @description Associated cup league ID, or null when there is no cup */
             cup_league?: number;
+            /** @description Whether this manager qualified for the cup, or null before qualification */
             cup_qualified?: boolean;
+            /** @description Whether this manager can administer the league */
             entry_can_admin: boolean;
+            /** @description Whether this manager can invite other managers */
             entry_can_invite: boolean;
+            /** @description Whether this manager can leave the league */
             entry_can_leave: boolean;
+            /** @description Manager's rank at the previous update */
             entry_last_rank: number;
+            /** @description Manager's current rank in the league */
             entry_rank: number;
+            /** @description Whether the league includes a cup competition */
             has_cup: boolean;
+            /** @description League ID */
             id: number;
+            /** @description FPL league type code */
             league_type: string;
+            /** @description Maximum number of managers, or null when unlimited */
             max_entries?: number;
+            /** @description League name */
             name: string;
+            /** @description League rank among leagues of the same type, or null when not ranked */
             rank?: number;
+            /** @description Scoring format code, such as c for classic or h for head-to-head */
             scoring: string;
+            /** @description Abbreviated league name, or null when none is set */
             short_name?: string;
+            /** @description First gameweek counted by the league */
             start_event: number;
         };
         Player: {
+            /** @description FPL assists awarded this season */
             assists: number;
+            /**
+             * Format: date
+             * @description Player's date of birth, or null when unavailable
+             */
             birth_date?: string;
+            /** @description Bonus points awarded this season */
             bonus: number;
+            /** @description Bonus Points System score */
             bps: number;
+            /** @description Whether managers can select the player in a squad */
             can_select: boolean;
+            /** @description Whether managers can currently buy or sell the player */
             can_transact: boolean;
+            /** @description Estimated chance of playing next gameweek as a percentage, or null when no estimate is needed */
             chance_of_playing_next_round?: number;
+            /** @description Estimated chance of playing this gameweek as a percentage, or null when no estimate is needed */
             chance_of_playing_this_round?: number;
+            /** @description FPL clean sheets awarded this season */
             clean_sheets: number;
+            /** @description Clean sheets per 90 minutes played */
             clean_sheets_per_90: number;
+            /** @description Player ID in the Premier League's data service */
             code: number;
+            /** @description Team priority for corners and indirect free kicks, or null when not listed */
             corners_and_indirect_freekicks_order?: number;
+            /** @description Human-readable corner and indirect-free-kick role; usually empty */
             corners_and_indirect_freekicks_text: string;
+            /** @description Price change during the current gameweek, in 0.1m units */
             cost_change_event: number;
+            /** @description Current-gameweek price fall expressed as a positive number in 0.1m units */
             cost_change_event_fall: number;
+            /** @description Price change since the start of the season, in 0.1m units */
             cost_change_start: number;
+            /** @description Season price fall expressed as a positive number in 0.1m units */
             cost_change_start_fall: number;
+            /** @description ICT creativity score, encoded as a decimal string */
             creativity: string;
+            /** @description Overall rank by creativity score */
             creativity_rank: number;
+            /** @description Rank by creativity score among players in the same position */
             creativity_rank_type: number;
+            /** @description Team priority for direct free kicks, or null when not listed */
             direct_freekicks_order?: number;
+            /** @description Human-readable direct-free-kick role; usually empty */
             direct_freekicks_text: string;
+            /** @description Number of gameweek dream teams the player has appeared in */
             dreamteam_count: number;
+            /** @description Position: 1=GKP, 2=DEF, 3=MID, 4=FWD */
             element_type: number;
+            /** @description Expected points next gameweek */
             ep_next?: string;
+            /** @description Expected points this gameweek */
             ep_this?: string;
+            /** @description FPL points in the current gameweek */
             event_points: number;
+            /** @description Expected assists this season, encoded as a decimal string */
             expected_assists: string;
+            /** @description Expected assists per 90 minutes */
             expected_assists_per_90: number;
+            /** @description Expected goals plus expected assists, encoded as a decimal string */
             expected_goal_involvements: string;
+            /** @description Expected goals plus expected assists per 90 minutes */
             expected_goal_involvements_per_90: number;
+            /** @description Expected goals this season, encoded as a decimal string */
             expected_goals: string;
+            /** @description Team expected goals conceded while the player was on the pitch, encoded as a decimal string */
             expected_goals_conceded: string;
+            /** @description Team expected goals conceded per 90 minutes while the player was on the pitch */
             expected_goals_conceded_per_90: number;
+            /** @description Expected goals per 90 minutes */
             expected_goals_per_90: number;
+            /** @description Player's first name */
             first_name: string;
+            /** @description Recent points-weighted form, encoded as a decimal string */
             form: string;
+            /** @description Overall rank by recent form */
             form_rank: number;
+            /** @description Recent-form rank among players in the same position */
             form_rank_type: number;
+            /** @description Goals conceded while the player was on the pitch */
             goals_conceded: number;
+            /** @description Goals conceded per 90 minutes while the player was on the pitch */
             goals_conceded_per_90: number;
+            /** @description Premier League goals scored this season */
             goals_scored: number;
+            /** @description Whether the external player code is temporary */
             has_temporary_code: boolean;
+            /** @description ICT Index combining influence, creativity, and threat */
             ict_index: string;
+            /** @description Overall rank by ICT Index */
             ict_index_rank: number;
+            /** @description Rank by ICT Index among players in the same position */
             ict_index_rank_type: number;
+            /** @description Player ID used by FPL endpoints */
             id: number;
+            /** @description Whether the player is in the season dream team */
             in_dreamteam: boolean;
+            /** @description ICT influence score, encoded as a decimal string */
             influence: string;
+            /** @description Overall rank by influence score */
             influence_rank: number;
+            /** @description Rank by influence score among players in the same position */
             influence_rank_type: number;
+            /** @description Minutes played this season */
             minutes: number;
+            /** @description Latest availability note; empty when there is no news */
             news: string;
+            /**
+             * Format: date-time
+             * @description Time the availability note was last updated, or null when there is no news
+             */
             news_added?: string;
+            /** @description Current price in 0.1m units (e.g., 100 = 10.0m) */
             now_cost: number;
+            /** @description Overall rank from most to least expensive */
             now_cost_rank: number;
+            /** @description Price rank among players in the same position */
             now_cost_rank_type: number;
+            /** @description Opta player identifier, or null when unavailable */
             opta_code?: string;
+            /** @description Own goals scored this season */
             own_goals: number;
+            /** @description Penalties missed this season */
             penalties_missed: number;
+            /** @description Team penalty-taking priority, or null when not listed */
             penalties_order?: number;
+            /** @description Penalties saved this season */
             penalties_saved: number;
+            /** @description Human-readable penalty-taking role; usually empty */
             penalties_text: string;
+            /** @description Player photo filename used by FPL's image service */
             photo: string;
+            /** @description Average FPL points per appearance, encoded as a decimal string */
             points_per_game: string;
+            /** @description Overall rank by points per game */
             points_per_game_rank: number;
+            /** @description Points-per-game rank among players in the same position */
             points_per_game_rank_type: number;
+            /** @description Red cards received this season */
             red_cards: number;
+            /** @description Player nationality region ID, or null when unavailable */
             region?: number;
+            /** @description Whether the player has been removed from the game */
             removed: boolean;
+            /** @description Goalkeeper saves this season */
             saves: number;
+            /** @description Goalkeeper saves per 90 minutes */
             saves_per_90: number;
+            /** @description Player's surname */
             second_name: string;
+            /** @description Percentage of squads that own the player, encoded as a decimal string */
             selected_by_percent: string;
+            /** @description Overall rank by squad ownership */
             selected_rank: number;
+            /** @description Ownership rank among players in the same position */
             selected_rank_type: number;
+            /** @description Whether the player is a special element governed by separate rules */
             special: boolean;
+            /** @description Premier League squad number, or null when unassigned */
             squad_number?: number;
+            /** @description Premier League starts this season */
             starts: number;
+            /** @description Starts per 90 minutes played */
             starts_per_90: number;
-            /** @enum {string} */
+            /**
+             * @description a=available, d=doubtful, i=injured, n=not available, s=suspended, u=unavailable
+             * @enum {string}
+             */
             status: "a" | "d" | "i" | "n" | "s" | "u";
+            /** @description Current Premier League team ID */
             team: number;
+            /** @description Current team's external data-service code */
             team_code: number;
+            /**
+             * Format: date
+             * @description Date the player joined the current club, or null when unavailable
+             */
             team_join_date?: string;
+            /** @description ICT threat score, encoded as a decimal string */
             threat: string;
+            /** @description Overall rank by threat score */
             threat_rank: number;
+            /** @description Rank by threat score among players in the same position */
             threat_rank_type: number;
+            /** @description Total FPL points this season */
             total_points: number;
+            /** @description Total transfers in this season */
             transfers_in: number;
+            /** @description Transfers in during the current gameweek */
             transfers_in_event: number;
+            /** @description Total transfers out this season */
             transfers_out: number;
+            /** @description Transfers out during the current gameweek */
             transfers_out_event: number;
+            /** @description Form divided by price, encoded as a decimal string */
             value_form: string;
+            /** @description Season points divided by price, encoded as a decimal string */
             value_season: string;
+            /** @description Short display name used by FPL */
             web_name: string;
+            /** @description Yellow cards received this season */
             yellow_cards: number;
         };
         Team: {
+            /** @description Internal team code */
             code: number;
+            /** @description Matches drawn */
             draw: number;
+            /** @description Recent form string */
             form?: string;
+            /** @description Unique team identifier */
             id: number;
+            /** @description Matches lost */
             loss: number;
+            /** @description Full team name */
             name: string;
+            /** @description Matches played */
             played: number;
+            /** @description League points */
             points: number;
+            /** @description Current league position */
             position: number;
+            /** @description External Pulse Sports ID */
             pulse_id: number;
+            /** @description 3-letter abbreviation */
             short_name: string;
+            /** @description Overall team strength rating */
             strength: number;
+            /** @description Attacking strength rating away */
             strength_attack_away: number;
+            /** @description Attacking strength rating at home */
             strength_attack_home: number;
+            /** @description Defensive strength rating away */
             strength_defence_away: number;
+            /** @description Defensive strength rating at home */
             strength_defence_home: number;
+            /** @description Overall strength rating away */
             strength_overall_away: number;
+            /** @description Overall strength rating at home */
             strength_overall_home: number;
+            /** @description Internal division identifier, or null when the team has no division */
             team_division?: number;
+            /** @description Whether team data is unavailable */
             unavailable: boolean;
+            /** @description Matches won */
             win: number;
         };
         TopElementInfo: {
+            /** @description Top-scoring player ID */
             id: number;
+            /** @description Points scored by the player in this gameweek */
             points: number;
         };
     };
@@ -1006,68 +1354,83 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "events": [
-                     *         {
-                     *           "id": 1,
-                     *           "name": "Gameweek 1",
-                     *           "deadline_time": "2025-08-15T17:30:00Z",
-                     *           "average_entry_score": 54,
-                     *           "finished": true,
-                     *           "is_current": false
-                     *         }
-                     *       ],
-                     *       "teams": [
-                     *         {
-                     *           "id": 1,
-                     *           "name": "Arsenal",
-                     *           "short_name": "ARS",
-                     *           "strength": 5
-                     *         }
-                     *       ],
-                     *       "total_players": 12802828
-                     *     }
-                     */
                     "application/json": {
+                        /** @description Available chips */
                         chips: components["schemas"]["Chip"][];
+                        /** @description Available player statistics */
                         element_stats: components["schemas"]["GetBootstrapStaticResponse200Elementstat"][];
+                        /** @description Player positions */
                         element_types: components["schemas"]["ElementType"][];
+                        /** @description All players (elements) */
                         elements: components["schemas"]["Player"][];
+                        /** @description All 38 gameweeks */
                         events: components["schemas"]["Event"][];
+                        /** @description Season-wide league, squad, transfer, cup, and UI rules */
                         game_settings: {
+                            /** @description Cup qualification method code, or null when no cup is configured */
                             cup_qualifying_method?: string;
+                            /** @description First cup gameweek, or null when no cup is configured */
                             cup_start_event_id?: number;
+                            /** @description Last cup gameweek, or null when no cup is configured */
                             cup_stop_event_id?: number;
+                            /** @description Cup format code, or null when no cup is configured */
                             cup_type?: string;
+                            /** @description Manager IDs featured by FPL */
                             featured_entries: number[];
+                            /** @description Maximum private leagues one manager can join */
                             league_join_private_max: number;
+                            /** @description Maximum public leagues one manager can join */
                             league_join_public_max: number;
+                            /** @description Whether knockout seeding uses league position instead of random selection */
                             league_ko_first_instead_of_random: boolean;
+                            /** @description Maximum knockout rounds in a private head-to-head league */
                             league_max_ko_rounds_private_h2h: number;
+                            /** @description Maximum managers in a private head-to-head league */
                             league_max_size_private_h2h: number;
+                            /** @description Maximum managers in a public classic league */
                             league_max_size_public_classic: number;
+                            /** @description Maximum managers in a public head-to-head league */
                             league_max_size_public_h2h: number;
+                            /** @description League-table points awarded for a head-to-head draw */
                             league_points_h2h_draw: number;
+                            /** @description League-table points awarded for a head-to-head loss */
                             league_points_h2h_lose: number;
+                            /** @description League-table points awarded for a head-to-head win */
                             league_points_h2h_win: number;
+                            /** @description Name prefix reserved for FPL-created public leagues */
                             league_prefix_public: string;
+                            /** @description Maximum free transfers that can be rolled over */
                             max_extra_free_transfers: number;
+                            /** @description Percentile boundaries used to group overall ranks */
                             percentile_ranks: number[];
+                            /** @description Starting XI size */
                             squad_squadplay: number;
+                            /** @description Total squad size */
                             squad_squadsize: number;
+                            /** @description Max players from one team */
                             squad_team_limit: number;
+                            /** @description Budget in 0.1m units */
                             squad_total_spend: number;
+                            /** @description Number of recent days used to calculate player form */
                             stats_form_days: number;
+                            /** @description Whether vice-captain selection is enabled */
                             sys_vice_captain_enabled: boolean;
+                            /** @description IANA timezone used for game deadlines */
                             timezone: string;
+                            /** @description Maximum transfers allowed in one gameweek */
                             transfers_cap: number;
+                            /** @description Share of price profit retained when a player is sold */
                             transfers_sell_on_fee: number;
+                            /** @description Multiplier the UI applies when displaying integer money values */
                             ui_currency_multiplier: number;
+                            /** @description Whether the UI should use special shirt artwork */
                             ui_use_special_shirts: boolean;
                         };
+                        /** @description Season and monthly scoring periods used by phase leagues */
                         phases: components["schemas"]["GetBootstrapStaticResponse200Phase"][];
+                        /** @description All 20 Premier League teams */
                         teams: components["schemas"]["Team"][];
+                        /** @description Total registered FPL managers */
                         total_players: number;
                     };
                 };
@@ -1092,7 +1455,9 @@ export interface operations {
                     "application/json": {
                         team: components["schemas"]["GetSeasonDreamTeamResponse200Team"][];
                         top_player: {
+                            /** @description Highest scorer's player ID */
                             id: number;
+                            /** @description Total points scored this season */
                             points: number;
                         };
                     };
@@ -1105,6 +1470,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Gameweek number (1-38) */
                 event_id: number;
             };
             cookie?: never;
@@ -1117,35 +1483,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "top_player": {
-                     *         "id": 351,
-                     *         "points": 21
-                     *       },
-                     *       "team": [
-                     *         {
-                     *           "element": 1,
-                     *           "points": 12,
-                     *           "position": 1
-                     *         },
-                     *         {
-                     *           "element": 45,
-                     *           "points": 15,
-                     *           "position": 2
-                     *         },
-                     *         {
-                     *           "element": 351,
-                     *           "points": 21,
-                     *           "position": 8
-                     *         }
-                     *       ]
-                     *     }
-                     */
                     "application/json": {
                         team: components["schemas"]["GetDreamTeamResponse200Team"][];
                         top_player: {
+                            /** @description Highest scorer's player ID */
                             id: number;
+                            /** @description Points scored */
                             points: number;
                         };
                     };
@@ -1158,6 +1501,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Player ID */
                 element_id: number;
             };
             cookie?: never;
@@ -1171,8 +1515,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Upcoming fixtures for this player */
                         fixtures: components["schemas"]["GetElementSummaryResponse200Fixture"][];
+                        /** @description Performance history this season */
                         history: components["schemas"]["GetElementSummaryResponse200History"][];
+                        /** @description Previous seasons statistics */
                         history_past: components["schemas"]["GetElementSummaryResponse200Historypast"][];
                     };
                 };
@@ -1184,6 +1531,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Manager/entry ID */
                 manager_id: number;
             };
             cookie?: never;
@@ -1196,24 +1544,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "id": 1234567,
-                     *       "joined_time": "2020-07-01T12:00:00Z",
-                     *       "started_event": 1,
-                     *       "player_first_name": "John",
-                     *       "player_last_name": "Smith",
-                     *       "player_region_name": "England",
-                     *       "summary_overall_points": 1500,
-                     *       "summary_overall_rank": 50000,
-                     *       "name": "FC John's Team",
-                     *       "leagues": {
-                     *         "classic": [],
-                     *         "h2h": [],
-                     *         "cup": {}
-                     *       }
-                     *     }
-                     */
                     "application/json": components["schemas"]["Manager"];
                 };
             };
@@ -1224,7 +1554,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Gameweek number (1-38) */
                 event_id: number;
+                /** @description Manager/entry ID */
                 manager_id: number;
             };
             cookie?: never;
@@ -1237,45 +1569,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "active_chip": null,
-                     *       "automatic_subs": [],
-                     *       "picks": [
-                     *         {
-                     *           "element": 1,
-                     *           "position": 1,
-                     *           "multiplier": 1,
-                     *           "is_captain": false,
-                     *           "is_vice_captain": false
-                     *         },
-                     *         {
-                     *           "element": 351,
-                     *           "position": 2,
-                     *           "multiplier": 2,
-                     *           "is_captain": true,
-                     *           "is_vice_captain": false
-                     *         }
-                     *       ]
-                     *     }
-                     */
                     "application/json": {
+                        /** @description Active chip for this gameweek (null if none) */
                         active_chip?: string;
+                        /** @description Automatic substitutions made */
                         automatic_subs: components["schemas"]["GetEntryPicksResponse200Automaticsub"][];
+                        /** @description Manager's score, rank, and squad value for this gameweek */
                         entry_history: {
+                            /** @description Unspent budget in 0.1m units at the deadline */
                             bank: number;
+                            /** @description Gameweek number */
                             event: number;
+                            /** @description Transfers made for this gameweek */
                             event_transfers: number;
+                            /** @description Points deducted for transfers */
                             event_transfers_cost: number;
+                            /** @description Overall rank after this gameweek, or null before ranks are calculated */
                             overall_rank?: number;
+                            /** @description Overall-rank percentile bucket, or null before ranks are calculated */
                             percentile_rank?: number;
+                            /** @description Net gameweek points after transfer costs */
                             points: number;
+                            /** @description Points scored by players left on the bench */
                             points_on_bench: number;
+                            /** @description Gameweek rank, or null before ranks are calculated */
                             rank?: number;
+                            /** @description Internal tie-breaking rank, or null before ranks are calculated */
                             rank_sort?: number;
+                            /** @description Cumulative season points after this gameweek */
                             total_points: number;
+                            /** @description Squad value in 0.1m units at the deadline */
                             value: number;
                         };
+                        /** @description Ordered 15-player squad at the gameweek deadline */
                         picks: components["schemas"]["GetEntryPicksResponse200Pick"][];
                     };
                 };
@@ -1287,6 +1613,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Manager/entry ID */
                 manager_id: number;
             };
             cookie?: never;
@@ -1300,8 +1627,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Chips used this season */
                         chips: components["schemas"]["GetEntryHistoryResponse200Chip"][];
+                        /** @description This season's gameweek history */
                         current: components["schemas"]["GetEntryHistoryResponse200Current"][];
+                        /** @description Previous seasons rankings */
                         past: components["schemas"]["GetEntryHistoryResponse200Past"][];
                     };
                 };
@@ -1313,6 +1643,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Manager/entry ID belonging to the authenticated user */
                 manager_id: number;
             };
             cookie?: never;
@@ -1326,13 +1657,22 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Player bought ID */
                         element_in: number;
+                        /** @description Purchase price in 0.1m units */
                         element_in_cost: number;
+                        /** @description Player sold ID */
                         element_out: number;
+                        /** @description Sale price in 0.1m units */
                         element_out_cost: number;
+                        /** @description Manager ID */
                         entry: number;
+                        /** @description Gameweek number */
                         event: number;
-                        /** Format: date-time */
+                        /**
+                         * Format: date-time
+                         * @description Transfer timestamp
+                         */
                         time: string;
                     }[];
                 };
@@ -1344,6 +1684,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Authentication required */
                         detail: string;
                     };
                 };
@@ -1355,6 +1696,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Manager/entry ID */
                 manager_id: number;
             };
             cookie?: never;
@@ -1367,27 +1709,23 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example [
-                     *       {
-                     *         "element_in": 351,
-                     *         "element_in_cost": 115,
-                     *         "element_out": 233,
-                     *         "element_out_cost": 65,
-                     *         "entry": 1234567,
-                     *         "event": 5,
-                     *         "time": "2025-09-10T12:30:00Z"
-                     *       }
-                     *     ]
-                     */
                     "application/json": {
+                        /** @description Player bought ID */
                         element_in: number;
+                        /** @description Purchase price in 0.1m units */
                         element_in_cost: number;
+                        /** @description Player sold ID */
                         element_out: number;
+                        /** @description Sale price in 0.1m units */
                         element_out_cost: number;
+                        /** @description Manager ID */
                         entry: number;
+                        /** @description Gameweek number */
                         event: number;
-                        /** Format: date-time */
+                        /**
+                         * Format: date-time
+                         * @description Transfer timestamp
+                         */
                         time: string;
                     }[];
                 };
@@ -1409,20 +1747,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "status": [
-                     *         {
-                     *           "bonus_added": true,
-                     *           "date": "2025-09-15",
-                     *           "event": 4,
-                     *           "points": "r"
-                     *         }
-                     *       ],
-                     *       "leagues": "Updated"
-                     *     }
-                     */
                     "application/json": {
+                        /** @description League update status */
                         leagues: string;
                         status: components["schemas"]["GetEventStatusResponse200Statu"][];
                     };
@@ -1435,6 +1761,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Gameweek number (1-38) */
                 event_id: number;
             };
             cookie?: never;
@@ -1457,7 +1784,9 @@ export interface operations {
     getFixtures: {
         parameters: {
             query?: {
+                /** @description Filter by gameweek number */
                 event?: number;
+                /** @description Set to 1 to only return future fixtures */
                 future?: number;
             };
             header?: never;
@@ -1472,32 +1801,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example [
-                     *       {
-                     *         "id": 1,
-                     *         "event": 1,
-                     *         "team_h": 1,
-                     *         "team_a": 10,
-                     *         "team_h_score": 2,
-                     *         "team_a_score": 0,
-                     *         "kickoff_time": "2025-08-16T11:30:00Z",
-                     *         "finished": true,
-                     *         "stats": [
-                     *           {
-                     *             "identifier": "goals_scored",
-                     *             "h": [
-                     *               {
-                     *                 "value": 1,
-                     *                 "element": 351
-                     *               }
-                     *             ],
-                     *             "a": []
-                     *           }
-                     *         ]
-                     *       }
-                     *     ]
-                     */
                     "application/json": components["schemas"]["Fixture"][];
                 };
             };
@@ -1508,6 +1811,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description League ID */
                 league_id: number;
             };
             cookie?: never;
@@ -1521,9 +1825,13 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Gameweek cup qualification occurred */
                         qualification_event?: number;
+                        /** @description Number of qualifiers */
                         qualification_numbers?: number;
+                        /** @description Rank required to qualify */
                         qualification_rank?: number;
+                        /** @description Current qualification state */
                         qualification_state?: string;
                     };
                 };
@@ -1533,11 +1841,14 @@ export interface operations {
     getLeagueClassicStandings: {
         parameters: {
             query?: {
+                /** @description Page number for new entries */
                 page_new_entries?: number;
+                /** @description Page number for pagination */
                 page_standings?: number;
             };
             header?: never;
             path: {
+                /** @description Classic league ID */
                 league_id: number;
             };
             cookie?: never;
@@ -1554,21 +1865,31 @@ export interface operations {
                         /** Format: date-time */
                         last_updated_data: string;
                         league: {
+                            /** @description Manager ID of league admin */
                             admin_entry?: number;
                             closed: boolean;
-                            /** @enum {string} */
+                            /**
+                             * @description p=private code, a=admin-only invites
+                             * @enum {string}
+                             */
                             code_privacy: "p" | "a";
                             /** Format: date-time */
                             created: string;
                             cup_league?: number;
                             has_cup: boolean;
                             id: number;
-                            /** @enum {string} */
+                            /**
+                             * @description x=private, s=global, c=country
+                             * @enum {string}
+                             */
                             league_type: "x" | "s" | "c";
                             max_entries?: number;
                             name: string;
                             rank?: number;
-                            /** @enum {string} */
+                            /**
+                             * @description c=classic, h=head-to-head
+                             * @enum {string}
+                             */
                             scoring: "c" | "h";
                             start_event: number;
                         };
@@ -1590,11 +1911,14 @@ export interface operations {
     getLeagueH2HMatches: {
         parameters: {
             query?: {
+                /** @description Filter by gameweek */
                 event?: number;
+                /** @description Page number */
                 page?: number;
             };
             header?: never;
             path: {
+                /** @description H2H league ID */
                 league_id: number;
             };
             cookie?: never;
@@ -1631,29 +1955,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "player": {
-                     *         "first_name": "John",
-                     *         "last_name": "Smith",
-                     *         "id": 9876543,
-                     *         "region": 80,
-                     *         "email": "john@example.com",
-                     *         "entry": 1234567
-                     *       }
-                     *     }
-                     */
                     "application/json": {
+                        /** @description User account linked to the authenticated session */
                         player: {
+                            /**
+                             * Format: date
+                             * @description Account holder's date of birth, or null when unavailable
+                             */
                             date_of_birth?: string;
+                            /** @description Whether the account profile has pending or incomplete changes */
                             dirty: boolean;
+                            /**
+                             * Format: email
+                             * @description Account email address
+                             */
                             email: string;
+                            /** @description Manager/entry ID */
                             entry: number;
+                            /** @description Whether the account receives FPL entry emails */
                             entry_email: boolean;
+                            /** @description Account holder's first name */
                             first_name: string;
+                            /** @description Account holder's gender value, or null when not provided */
                             gender?: string;
+                            /** @description User ID */
                             id: number;
+                            /** @description Account holder's last name */
                             last_name: string;
+                            /** @description Profile region ID */
                             region: number;
                         };
                     };
@@ -1666,6 +1995,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Authentication required */
                         detail: string;
                     };
                 };
@@ -1677,6 +2007,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                /** @description Manager/entry ID */
                 manager_id: number;
             };
             cookie?: never;
@@ -1693,12 +2024,20 @@ export interface operations {
                         chips: components["schemas"]["GetMyTeamResponse200Chip"][];
                         picks: components["schemas"]["GetMyTeamResponse200Pick"][];
                         transfers: {
+                            /** @description Unspent budget in 0.1m units */
                             bank: number;
+                            /** @description Transfer cost in points */
                             cost: number;
+                            /** @description Free-transfer allowance, or null when transfers are unlimited */
                             limit?: number;
+                            /** @description Transfers made this gameweek */
                             made: number;
-                            /** @enum {string} */
+                            /**
+                             * @description Whether the next transfer costs points or is free
+                             * @enum {string}
+                             */
                             status: "cost" | "free";
+                            /** @description Current squad value in 0.1m units */
                             value: number;
                         };
                     };
@@ -1711,6 +2050,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Authentication required */
                         detail: string;
                     };
                 };
@@ -1733,10 +2073,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description Numeric region code */
                         code: number;
+                        /** @description Region ID used by manager profiles */
                         id: number;
+                        /** @description ISO 3166-1 alpha-3 code */
                         iso_code_long: string;
+                        /** @description ISO 3166-1 alpha-2 code */
                         iso_code_short: string;
+                        /** @description Display name */
                         name: string;
                     }[];
                 };
@@ -1759,9 +2104,13 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        /** @description League average score, formatted to one decimal place */
                         average_score: string;
+                        /** @description Number of managers in the league */
                         entries: number;
+                        /** @description Classic league ID */
                         league: number;
+                        /** @description League name */
                         name: string;
                     }[];
                 };
@@ -1783,20 +2132,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example [
-                     *       {
-                     *         "id": 1234567,
-                     *         "name": "Expensive FC",
-                     *         "manager": "Rich Manager",
-                     *         "value": 1150
-                     *       }
-                     *     ]
-                     */
                     "application/json": {
+                        /** @description Manager/entry ID */
                         id: number;
+                        /** @description Manager name */
                         manager: string;
+                        /** @description Team name */
                         name: string;
+                        /** @description Total squad value in 0.1m units */
                         value: number;
                     }[];
                 };
@@ -1818,22 +2161,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "teams": [
-                     *         {
-                     *           "id": 1,
-                     *           "notes": [
-                     *             {
-                     *               "external_link": false,
-                     *               "info_message": "Saka takes corners from the right, Martinelli from the left.",
-                     *               "source_link": null
-                     *             }
-                     *           ]
-                     *         }
-                     *       ]
-                     *     }
-                     */
                     "application/json": {
                         teams: components["schemas"]["GetSetPieceNotesResponse200Team"][];
                     };

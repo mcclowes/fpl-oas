@@ -20,8 +20,9 @@
     "generate": "openapi-typescript ../static/openapi.yaml --output src/schema.gen.ts --alphabetize",
     "build": "tsup",
     "prepack": "npm run check",
+    "test": "vitest run",
     "check:generated": "npm run generate && git diff --exit-code -- src/schema.gen.ts",
-    "check": "npm run check:generated && tsc --noEmit && npm run build"
+    "check": "npm run check:generated && tsc --noEmit && npm test && npm run build"
   },
   "dependencies": {
     "openapi-fetch": "^0.15.0"
@@ -29,7 +30,8 @@
   "devDependencies": {
     "openapi-typescript": "^7.9.1",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "engines": { "node": ">=20.0" },
   "publishConfig": { "access": "public" }
