@@ -19,7 +19,10 @@
     "lint": "omg lint endpoints/",
     "lint:spec": "speccy lint static/openapi.yaml",
     "diff:spec": "speccy diff origin/main:static/openapi.yaml static/openapi.yaml",
-    "check:package": "npm pack --dry-run"
+    "check:package": "npm pack --dry-run",
+    "generate:sdk": "npm --prefix sdk run generate",
+    "build:sdk": "npm --prefix sdk run build",
+    "check:sdk": "npm --prefix sdk run check"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.2",

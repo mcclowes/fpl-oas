@@ -71,6 +71,17 @@ The reference is at `/api`. The OpenAPI document is served at `/openapi.yaml`
 with permissive CORS, so tooling can fetch it directly, and the Speccy plugin
 republishes a copy at `/api/openapi.yaml`.
 
+## TypeScript client
+
+The generated client lives in [`sdk/`](sdk/README.md). It provides a strict,
+Fetch-based API with types generated from the committed OpenAPI document.
+
+```bash
+npm --prefix sdk install
+npm run generate:sdk
+npm run check:sdk
+```
+
 ## Editing the spec
 
 `static/openapi.yaml` is **generated**. Editing it directly will be overwritten.
