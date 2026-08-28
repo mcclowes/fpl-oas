@@ -32,6 +32,9 @@ const config: Config = {
           // purple: the brand #37003c is unreadable on a dark background.
           accentColor: '#9d4edd',
           theme: 'inherit',
+          // FPL does not allow cross-origin browser requests, so the request
+          // builder would only fail with a CORS error.
+          tryIt: false,
         },
       },
     ],
