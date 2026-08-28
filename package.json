@@ -1,7 +1,14 @@
 {
-  "name": "fpl-api-docs",
+  "name": "@mcclowes/fpl-api-spec",
   "version": "1.0.0",
-  "description": "Fantasy Premier League API documentation",
+  "description": "Unofficial OpenAPI specification for the Fantasy Premier League API",
+  "files": [
+    "static/openapi.yaml"
+  ],
+  "exports": {
+    ".": "./static/openapi.yaml",
+    "./openapi.yaml": "./static/openapi.yaml"
+  },
   "scripts": {
     "dev": "docusaurus start",
     "build": "docusaurus build",
@@ -11,7 +18,8 @@
     "build:spec": "omg build api.omg.md -o static/openapi.yaml",
     "lint": "omg lint endpoints/",
     "lint:spec": "speccy lint static/openapi.yaml",
-    "diff:spec": "speccy diff origin/main:static/openapi.yaml static/openapi.yaml"
+    "diff:spec": "speccy diff origin/main:static/openapi.yaml static/openapi.yaml",
+    "check:package": "npm pack --dry-run"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.2",
@@ -44,6 +52,14 @@
     "documentation"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcclowes/fpl-oas.git"
+  },
+  "homepage": "https://github.com/mcclowes/fpl-oas#readme",
+  "bugs": {
+    "url": "https://github.com/mcclowes/fpl-oas/issues"
+  },
   "engines": {
     "node": ">=20.0"
   }

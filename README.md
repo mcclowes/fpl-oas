@@ -6,6 +6,24 @@ Unofficial OpenAPI documentation for the Fantasy Premier League API, authored in
 
 Base URL: `https://fantasy.premierleague.com/api/`
 
+## npm package
+
+The generated OpenAPI document is published as `@mcclowes/fpl-api-spec`:
+
+```bash
+npm install @mcclowes/fpl-api-spec
+```
+
+Resolve the YAML file from Node.js without depending on the package's internal
+directory layout:
+
+```js
+const openapiPath = require.resolve('@mcclowes/fpl-api-spec/openapi.yaml');
+```
+
+Tools that accept package-relative paths can use
+`node_modules/@mcclowes/fpl-api-spec/static/openapi.yaml` directly.
+
 ## Overview
 
 The FPL API provides access to:
@@ -90,6 +108,12 @@ docusaurus.config.ts  Site and Speccy plugin configuration
 ## Deployment
 
 Vercel, configured in `vercel.json`. Any static host works — upload `build/`.
+
+The first version must be published locally with `npm publish --access public`.
+Once the package exists on npm, configure its trusted publisher for the
+`mcclowes/fpl-oas` repository and `publish-npm.yml` workflow. Later GitHub
+Releases will publish through OIDC, without an npm token. The release tag must
+match the version in `package.json`, prefixed with `v`, such as `v1.0.0`.
 
 ## Authentication
 
