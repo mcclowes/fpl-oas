@@ -316,10 +316,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get authenticated user
-         * @description Returns the account profile and manager ID associated with the current FPL session. Use `player.entry` to call manager-specific endpoints.
+         * Get current user
+         * @description Returns the account profile and manager ID associated with the current FPL session. Without a session, `player` is null. Use `player.entry` to call manager-specific endpoints.
          *
-         *     **Requires authentication via FPL session cookie.**
+         *     Authentication is optional. An FPL session cookie adds the current account data.
          */
         get: operations["getMe"];
         put?: never;
@@ -436,6 +436,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ApiError: {
+            /** @description Human-readable reason the request failed */
+            detail: string;
+        };
         Chip: {
             /**
              * @description Whether chip affects transfers or team selection
@@ -1494,6 +1498,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     getElementSummary: {
@@ -1524,6 +1537,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     getEntry: {
@@ -1545,6 +1567,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Manager"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -1606,6 +1637,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     getEntryHistory: {
@@ -1634,6 +1674,15 @@ export interface operations {
                         /** @description Previous seasons rankings */
                         past: components["schemas"]["GetEntryHistoryResponse200Past"][];
                     };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -1677,16 +1726,13 @@ export interface operations {
                     }[];
                 };
             };
-            /** @description Unauthorized */
-            401: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** @description Authentication required */
-                        detail: string;
-                    };
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -1728,6 +1774,15 @@ export interface operations {
                          */
                         time: string;
                     }[];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -1777,6 +1832,15 @@ export interface operations {
                     "application/json": {
                         elements: components["schemas"]["GetEventLiveResponse200Element"][];
                     };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -1834,6 +1898,15 @@ export interface operations {
                         /** @description Current qualification state */
                         qualification_state?: string;
                     };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -1906,6 +1979,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     getLeagueH2HMatches: {
@@ -1938,6 +2020,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     getMe: {
@@ -1956,7 +2047,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @description User account linked to the authenticated session */
+                        /** @description User account linked to the authenticated session, or null without a session */
                         player: {
                             /**
                              * Format: date
@@ -1984,19 +2075,9 @@ export interface operations {
                             last_name: string;
                             /** @description Profile region ID */
                             region: number;
-                        };
-                    };
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @description Authentication required */
-                        detail: string;
+                        } | null;
+                        /** @description Player IDs on the authenticated account's watchlist; empty without a session */
+                        watched: number[];
                     };
                 };
             };
@@ -2043,16 +2124,13 @@ export interface operations {
                     };
                 };
             };
-            /** @description Unauthorized */
-            401: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** @description Authentication required */
-                        detail: string;
-                    };
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };

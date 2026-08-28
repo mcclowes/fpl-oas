@@ -70,4 +70,18 @@ describe("FplSdk", () => {
     const sdk = createFplSdk();
     expect(sdk.client.GET).toBeTypeOf("function");
   });
+
+  it("returns the documented error body for missing resources", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      new Response(JSON.stringify({ detail: "Not found." }), {
+        headers: { "content-type": "application/json" },
+        status: 404,
+      }),
+    );
+    const sdk = createFplSdk({ baseUrl: "https://proxy.example", fetch });
+
+    const { error } = await sdk.getPlayerSummary(999999999);
+
+    expect(error?.detail).toBe("Not found.");
+  });
 });

@@ -15,6 +15,10 @@ Returns detailed information about a specific player, including their fixture hi
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.response
 {
   fixtures: [{

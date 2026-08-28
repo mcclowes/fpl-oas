@@ -15,6 +15,10 @@ Returns the cup competition status for a specific league.
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.response
 {
   qualification_event: integer? @description("Gameweek cup qualification occurred"),

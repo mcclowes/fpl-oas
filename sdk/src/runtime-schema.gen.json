@@ -1,5 +1,17 @@
 {
   "$defs": {
+    "ApiError": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "description": "Human-readable reason the request failed",
+          "type": "string"
+        }
+      },
+      "required": [
+        "detail"
+      ]
+    },
     "ChipOverrides": {
       "type": "object",
       "properties": {
@@ -2745,6 +2757,14 @@
     },
     {
       "method": "GET",
+      "path": "/league/{league_id}/cup-status/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
+    },
+    {
+      "method": "GET",
       "path": "/dream-team/{event_id}/",
       "schema": {
         "type": "object",
@@ -2779,6 +2799,14 @@
         ]
       },
       "status": "200"
+    },
+    {
+      "method": "GET",
+      "path": "/dream-team/{event_id}/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
     },
     {
       "method": "GET",
@@ -2818,6 +2846,14 @@
     },
     {
       "method": "GET",
+      "path": "/element-summary/{element_id}/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
+    },
+    {
+      "method": "GET",
       "path": "/entry/{manager_id}/history/",
       "schema": {
         "type": "object",
@@ -2851,6 +2887,14 @@
         ]
       },
       "status": "200"
+    },
+    {
+      "method": "GET",
+      "path": "/entry/{manager_id}/history/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
     },
     {
       "method": "GET",
@@ -2951,6 +2995,14 @@
     },
     {
       "method": "GET",
+      "path": "/entry/{manager_id}/event/{event_id}/picks/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
+    },
+    {
+      "method": "GET",
       "path": "/entry/{manager_id}/transfers-latest/",
       "schema": {
         "type": "array",
@@ -3004,18 +3056,9 @@
       "method": "GET",
       "path": "/entry/{manager_id}/transfers-latest/",
       "schema": {
-        "type": "object",
-        "properties": {
-          "detail": {
-            "description": "Authentication required",
-            "type": "string"
-          }
-        },
-        "required": [
-          "detail"
-        ]
+        "$ref": "#/$defs/ApiError"
       },
-      "status": "401"
+      "status": "403"
     },
     {
       "method": "GET",
@@ -3070,11 +3113,27 @@
     },
     {
       "method": "GET",
+      "path": "/entry/{manager_id}/transfers/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
+    },
+    {
+      "method": "GET",
       "path": "/entry/{manager_id}/",
       "schema": {
         "$ref": "#/$defs/Manager"
       },
       "status": "200"
+    },
+    {
+      "method": "GET",
+      "path": "/entry/{manager_id}/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
     },
     {
       "method": "GET",
@@ -3094,6 +3153,14 @@
         ]
       },
       "status": "200"
+    },
+    {
+      "method": "GET",
+      "path": "/event/{event_id}/live/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
     },
     {
       "method": "GET",
@@ -3269,6 +3336,14 @@
     },
     {
       "method": "GET",
+      "path": "/leagues-classic/{league_id}/standings/",
+      "schema": {
+        "$ref": "#/$defs/ApiError"
+      },
+      "status": "404"
+    },
+    {
+      "method": "GET",
       "path": "/leagues-h2h-matches/league/{league_id}/",
       "schema": {
         "type": "object",
@@ -3296,74 +3371,11 @@
     },
     {
       "method": "GET",
-      "path": "/me/",
+      "path": "/leagues-h2h-matches/league/{league_id}/",
       "schema": {
-        "type": "object",
-        "properties": {
-          "player": {
-            "description": "User account linked to the authenticated session",
-            "type": "object",
-            "properties": {
-              "date_of_birth": {
-                "description": "Account holder's date of birth, or null when unavailable",
-                "format": "date",
-                "type": "string"
-              },
-              "dirty": {
-                "description": "Whether the account profile has pending or incomplete changes",
-                "type": "boolean"
-              },
-              "first_name": {
-                "description": "Account holder's first name",
-                "type": "string"
-              },
-              "gender": {
-                "description": "Account holder's gender value, or null when not provided",
-                "type": "string"
-              },
-              "id": {
-                "description": "User ID",
-                "type": "integer"
-              },
-              "last_name": {
-                "description": "Account holder's last name",
-                "type": "string"
-              },
-              "region": {
-                "description": "Profile region ID",
-                "type": "integer"
-              },
-              "email": {
-                "description": "Account email address",
-                "format": "email",
-                "type": "string"
-              },
-              "entry": {
-                "description": "Manager/entry ID",
-                "type": "integer"
-              },
-              "entry_email": {
-                "description": "Whether the account receives FPL entry emails",
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "dirty",
-              "first_name",
-              "id",
-              "last_name",
-              "region",
-              "email",
-              "entry",
-              "entry_email"
-            ]
-          }
-        },
-        "required": [
-          "player"
-        ]
+        "$ref": "#/$defs/ApiError"
       },
-      "status": "200"
+      "status": "404"
     },
     {
       "method": "GET",
@@ -3371,16 +3383,85 @@
       "schema": {
         "type": "object",
         "properties": {
-          "detail": {
-            "description": "Authentication required",
-            "type": "string"
+          "player": {
+            "anyOf": [
+              {
+                "description": "User account linked to the authenticated session, or null without a session",
+                "type": "object",
+                "properties": {
+                  "date_of_birth": {
+                    "description": "Account holder's date of birth, or null when unavailable",
+                    "format": "date",
+                    "type": "string"
+                  },
+                  "dirty": {
+                    "description": "Whether the account profile has pending or incomplete changes",
+                    "type": "boolean"
+                  },
+                  "first_name": {
+                    "description": "Account holder's first name",
+                    "type": "string"
+                  },
+                  "gender": {
+                    "description": "Account holder's gender value, or null when not provided",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "User ID",
+                    "type": "integer"
+                  },
+                  "last_name": {
+                    "description": "Account holder's last name",
+                    "type": "string"
+                  },
+                  "region": {
+                    "description": "Profile region ID",
+                    "type": "integer"
+                  },
+                  "email": {
+                    "description": "Account email address",
+                    "format": "email",
+                    "type": "string"
+                  },
+                  "entry": {
+                    "description": "Manager/entry ID",
+                    "type": "integer"
+                  },
+                  "entry_email": {
+                    "description": "Whether the account receives FPL entry emails",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "dirty",
+                  "first_name",
+                  "id",
+                  "last_name",
+                  "region",
+                  "email",
+                  "entry",
+                  "entry_email"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "watched": {
+            "description": "Player IDs on the authenticated account's watchlist; empty without a session",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
           }
         },
         "required": [
-          "detail"
+          "player",
+          "watched"
         ]
       },
-      "status": "401"
+      "status": "200"
     },
     {
       "method": "GET",
@@ -3488,18 +3569,9 @@
       "method": "GET",
       "path": "/my-team/{manager_id}/",
       "schema": {
-        "type": "object",
-        "properties": {
-          "detail": {
-            "description": "Authentication required",
-            "type": "string"
-          }
-        },
-        "required": [
-          "detail"
-        ]
+        "$ref": "#/$defs/ApiError"
       },
-      "status": "401"
+      "status": "403"
     },
     {
       "method": "GET",

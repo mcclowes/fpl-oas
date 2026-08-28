@@ -50,8 +50,6 @@ Returns the authenticated manager's editable 15-player squad, chip availability,
 }
 ```
 
-```omg.response.401
-{
-  detail: string @description("Authentication required")
-}
+```omg.response.403
+ApiError
 ```

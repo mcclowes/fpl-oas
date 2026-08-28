@@ -15,6 +15,10 @@ Returns head-to-head matchups for a specific league.
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.query
 {
   page: integer? @min(1) @description("Page number"),

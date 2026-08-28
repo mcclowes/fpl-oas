@@ -15,6 +15,10 @@ Returns the highest-scoring players (dream team) for a specific gameweek.
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.response
 {
   top_player: {

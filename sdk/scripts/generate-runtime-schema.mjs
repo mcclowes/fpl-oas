@@ -10,7 +10,7 @@ function rewriteReferences(value) {
   if (Array.isArray(value)) return value.map(rewriteReferences);
   if (!value || typeof value !== "object") return value;
 
-  return Object.fromEntries(
+  const rewritten = Object.fromEntries(
     Object.entries(value).map(([key, child]) => [
       key,
       key === "$ref" && typeof child === "string"
@@ -18,6 +18,13 @@ function rewriteReferences(value) {
         : rewriteReferences(child),
     ]),
   );
+
+  if (rewritten.nullable === true) {
+    const { nullable: _, ...schema } = rewritten;
+    return { anyOf: [schema, { type: "null" }] };
+  }
+
+  return rewritten;
 }
 
 const responses = [];

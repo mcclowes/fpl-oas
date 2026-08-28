@@ -270,6 +270,12 @@ paths:
                   qualification_state:
                     description: "Current qualification state"
                     type: "string"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "league_id"
           in: "path"
@@ -312,6 +318,12 @@ paths:
                 required:
                   - "top_player"
                   - "team"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "event_id"
           in: "path"
@@ -354,6 +366,12 @@ paths:
                   - "fixtures"
                   - "history"
                   - "history_past"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "element_id"
           in: "path"
@@ -396,6 +414,12 @@ paths:
                   - "current"
                   - "past"
                   - "chips"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "manager_id"
           in: "path"
@@ -485,6 +509,12 @@ paths:
                   - "automatic_subs"
                   - "entry_history"
                   - "picks"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "manager_id"
           in: "path"
@@ -550,18 +580,12 @@ paths:
                     - "entry"
                     - "event"
                     - "time"
-        "401":
-          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
           content:
             application/json:
               schema:
-                type: "object"
-                properties:
-                  detail:
-                    description: "Authentication required"
-                    type: "string"
-                required:
-                  - "detail"
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "manager_id"
           in: "path"
@@ -617,6 +641,12 @@ paths:
                     - "entry"
                     - "event"
                     - "time"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "manager_id"
           in: "path"
@@ -639,6 +669,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Manager"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "manager_id"
           in: "path"
@@ -668,6 +704,12 @@ paths:
                       $ref: "#/components/schemas/GetEventLiveResponse200Element"
                 required:
                   - "elements"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "event_id"
           in: "path"
@@ -839,6 +881,12 @@ paths:
                   - "last_updated_data"
                   - "league"
                   - "standings"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "league_id"
           in: "path"
@@ -890,6 +938,12 @@ paths:
                   - "has_next"
                   - "page"
                   - "results"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "league_id"
           in: "path"
@@ -916,11 +970,11 @@ paths:
   /me/:
     get:
       operationId: "getMe"
-      summary: "Get authenticated user"
-      description: "Returns the account profile and manager ID associated with the current FPL session. Use `player.entry` to call manager-specific endpoints.
+      summary: "Get current user"
+      description: "Returns the account profile and manager ID associated with the current FPL session. Without a session, `player` is null. Use `player.entry` to call manager-specific endpoints.
 
 
-        **Requires authentication via FPL session cookie.**"
+        Authentication is optional. An FPL session cookie adds the current account data."
       tags:
         - "Managers"
       responses:
@@ -932,7 +986,8 @@ paths:
                 type: "object"
                 properties:
                   player:
-                    description: "User account linked to the authenticated session"
+                    nullable: true
+                    description: "User account linked to the authenticated session, or null without a session"
                     type: "object"
                     properties:
                       date_of_birth:
@@ -976,20 +1031,14 @@ paths:
                       - "email"
                       - "entry"
                       - "entry_email"
+                  watched:
+                    description: "Player IDs on the authenticated account's watchlist; empty without a session"
+                    type: "array"
+                    items:
+                      type: "integer"
                 required:
                   - "player"
-        "401":
-          description: "Unauthorized"
-          content:
-            application/json:
-              schema:
-                type: "object"
-                properties:
-                  detail:
-                    description: "Authentication required"
-                    type: "string"
-                required:
-                  - "detail"
+                  - "watched"
   /stats/most-valuable-teams/:
     get:
       operationId: "getMostValuableTeams"
@@ -1084,18 +1133,12 @@ paths:
                   - "picks"
                   - "chips"
                   - "transfers"
-        "401":
-          description: "Unauthorized"
+        "403":
+          description: "Forbidden"
           content:
             application/json:
               schema:
-                type: "object"
-                properties:
-                  detail:
-                    description: "Authentication required"
-                    type: "string"
-                required:
-                  - "detail"
+                $ref: "#/components/schemas/ApiError"
       parameters:
         - name: "manager_id"
           in: "path"
@@ -1199,6 +1242,14 @@ paths:
                   - "teams"
 components:
   schemas:
+    ApiError:
+      type: "object"
+      properties:
+        detail:
+          description: "Human-readable reason the request failed"
+          type: "string"
+      required:
+        - "detail"
     ChipOverrides:
       type: "object"
       properties:

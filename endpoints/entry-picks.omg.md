@@ -16,6 +16,10 @@ Returns a manager's team selection for a specific gameweek, including captain ch
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.response
 {
   active_chip: string? @description("Active chip for this gameweek (null if none)"),

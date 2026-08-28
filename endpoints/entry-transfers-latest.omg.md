@@ -31,10 +31,8 @@ Returns transfers made by the authenticated manager in the current gameweek.
 }]
 ```
 
-```omg.response.401
-{
-  detail: string @description("Authentication required")
-}
+```omg.response.403
+ApiError
 ```
 
 ```omg.example

@@ -55,4 +55,18 @@ describe("response validation", () => {
     const { data } = await sdk.getPlayerSummary(351);
     expect(data?.fixtures).toBe("not-an-array");
   });
+
+  it("accepts the anonymous current-user response", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      jsonResponse({ player: null, watched: [] }),
+    );
+    const sdk = createFplSdk({
+      baseUrl: "https://example.test/api",
+      fetch,
+      validateResponses: true,
+    });
+
+    const { data } = await sdk.getCurrentUser();
+    expect(data?.player).toBeNull();
+  });
 });

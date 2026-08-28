@@ -5,13 +5,14 @@ operationId: getMe
 tags: [Managers]
 security:
   - session: []
+  - {}
 ---
 
-# Get authenticated user
+# Get current user
 
-Returns the account profile and manager ID associated with the current FPL session. Use `player.entry` to call manager-specific endpoints.
+Returns the account profile and manager ID associated with the current FPL session. Without a session, `player` is null. Use `player.entry` to call manager-specific endpoints.
 
-**Requires authentication via FPL session cookie.**
+Authentication is optional. An FPL session cookie adds the current account data.
 
 ```omg.response
 {
@@ -26,13 +27,8 @@ Returns the account profile and manager ID associated with the current FPL sessi
     email: string @format("email") @description("Account email address"),
     entry: integer @description("Manager/entry ID"),
     entry_email: boolean @description("Whether the account receives FPL entry emails")
-  } @description("User account linked to the authenticated session")
-}
-```
-
-```omg.response.401
-{
-  detail: string @description("Authentication required")
+  } @description("User account linked to the authenticated session, or null without a session") | null,
+  watched: [integer] @description("Player IDs on the authenticated account's watchlist; empty without a session")
 }
 ```
 

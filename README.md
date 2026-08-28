@@ -55,7 +55,7 @@ The FPL API provides access to:
 | [`/regions/`](endpoints/regions.omg.md) | Manager profile regions and countries |
 | [`/team/set-piece-notes/`](endpoints/set-piece-notes.omg.md) | Set piece taker info |
 | [`/my-team/{manager_id}/`](endpoints/my-team.omg.md) | Authenticated user's team |
-| [`/me/`](endpoints/me.omg.md) | Authenticated user profile |
+| [`/me/`](endpoints/me.omg.md) | Current user profile (session optional) |
 | [`/entry/{manager_id}/transfers-latest/`](endpoints/entry-transfers-latest.omg.md) | Authenticated user's current-gameweek transfers |
 | [`/stats/best-classic-private-leagues/`](endpoints/best-classic-private-leagues.omg.md) | Highest-scoring private classic leagues |
 | [`/stats/most-valuable-teams/`](endpoints/most-valuable-teams.omg.md) | Most valuable teams |
@@ -132,9 +132,10 @@ match the version in `package.json`, prefixed with `v`, such as `v1.0.0`.
 
 ## Authentication
 
-Most endpoints are public. `/my-team/{manager_id}/`, `/me/`, and
+Most endpoints are public. `/my-team/{manager_id}/` and
 `/entry/{manager_id}/transfers-latest/` need session cookies from logging into
-fantasy.premierleague.com. See [docs/authentication.md](docs/authentication.md).
+fantasy.premierleague.com. `/me/` accepts a session but returns an anonymous
+response without one. See [docs/authentication.md](docs/authentication.md).
 
 ## Disclaimer
 

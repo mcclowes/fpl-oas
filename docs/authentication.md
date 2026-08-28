@@ -10,13 +10,13 @@ Most of the API is public. You can read every player, team, fixture, gameweek,
 manager, and league without credentials, and that covers nearly everything worth
 building on.
 
-Three endpoints need a logged-in session:
+Two endpoints need a logged-in session, and one returns more data with a session:
 
 | Endpoint | What it needs a session for |
 | --- | --- |
-| [`/me/`](/api/getme) | Your own profile |
 | [`/my-team/{manager_id}/`](/api/getmyteam) | Your current squad, including bench order and chips |
 | [`/entry/{manager_id}/transfers-latest/`](/api/getentrytransferslatest) | Transfers made in the current gameweek |
+| [`/me/`](/api/getme) | Your own profile when authenticated; `player: null` otherwise |
 
 The distinction is between what is public about a manager and what is private to
 them. [`/entry/{manager_id}/`](/api/getentry) — anyone's profile, points, and rank — is public.

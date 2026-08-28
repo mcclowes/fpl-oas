@@ -15,6 +15,10 @@ Returns standings for a classic scoring league, including manager rankings and p
 }
 ```
 
+```omg.response.404
+ApiError
+```
+
 ```omg.query
 {
   page_standings: integer? @min(1) @description("Page number for pagination"),
