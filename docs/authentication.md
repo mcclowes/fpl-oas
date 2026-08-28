@@ -16,7 +16,7 @@ Three endpoints need a logged-in session:
 | --- | --- |
 | [`/me/`](/api/getme) | Your own profile |
 | [`/my-team/{manager_id}/`](/api/getmyteam) | Your current squad, including bench order and chips |
-| `/entry/{manager_id}/transfers-latest/` | Transfers you have made but not confirmed |
+| [`/entry/{manager_id}/transfers-latest/`](/api/getentrytransferslatest) | Transfers made in the current gameweek |
 
 The distinction is between what is public about a manager and what is private to
 them. [`/entry/{manager_id}/`](/api/getentry) — anyone's profile, points, and rank — is public.

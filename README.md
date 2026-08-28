@@ -51,9 +51,13 @@ The FPL API provides access to:
 | [`/leagues-h2h-matches/league/{league_id}/`](endpoints/leagues-h2h.omg.md) | H2H league matches |
 | [`/event-status/`](endpoints/event-status.omg.md) | Gameweek status |
 | [`/dream-team/{event_id}/`](endpoints/dream-team.omg.md) | Dream team for gameweek |
+| [`/dream-team/`](endpoints/season-dream-team.omg.md) | Dream team for the season to date |
+| [`/regions/`](endpoints/regions.omg.md) | Manager profile regions and countries |
 | [`/team/set-piece-notes/`](endpoints/set-piece-notes.omg.md) | Set piece taker info |
 | [`/my-team/{manager_id}/`](endpoints/my-team.omg.md) | Authenticated user's team |
 | [`/me/`](endpoints/me.omg.md) | Authenticated user profile |
+| [`/entry/{manager_id}/transfers-latest/`](endpoints/entry-transfers-latest.omg.md) | Authenticated user's current-gameweek transfers |
+| [`/stats/best-classic-private-leagues/`](endpoints/best-classic-private-leagues.omg.md) | Highest-scoring private classic leagues |
 | [`/stats/most-valuable-teams/`](endpoints/most-valuable-teams.omg.md) | Most valuable teams |
 | [`/league/{league_id}/cup-status/`](endpoints/cup-status.omg.md) | League cup status |
 

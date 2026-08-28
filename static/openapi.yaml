@@ -22,6 +22,36 @@ info:
 
     The API does not publish official rate limits, but excessive requests may result in temporary blocks. Please be respectful of the service."
 paths:
+  /stats/best-classic-private-leagues/:
+    get:
+      operationId: "getBestClassicPrivateLeagues"
+      summary: "Get best classic private leagues"
+      description: "Returns the highest-scoring private classic leagues, ranked by average score."
+      tags:
+        - "Stats"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    league:
+                      type: "integer"
+                    entries:
+                      type: "integer"
+                    average_score:
+                      type: "string"
+                    name:
+                      type: "string"
+                  required:
+                    - "league"
+                    - "entries"
+                    - "average_score"
+                    - "name"
   /bootstrap-static/:
     get:
       operationId: "getBootstrapStatic"
@@ -426,6 +456,68 @@ paths:
           schema:
             type: "integer"
         - name: "event_id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+  /entry/{manager_id}/transfers-latest/:
+    get:
+      operationId: "getEntryTransfersLatest"
+      summary: "Get latest manager transfers"
+      description: "Returns transfers made by the authenticated manager in the current gameweek.
+
+
+        **Requires authentication via FPL session cookie. The manager ID must belong to the authenticated user.**"
+      tags:
+        - "Managers"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    element_in:
+                      type: "integer"
+                    element_in_cost:
+                      type: "integer"
+                    element_out:
+                      type: "integer"
+                    element_out_cost:
+                      type: "integer"
+                    entry:
+                      type: "integer"
+                    event:
+                      type: "integer"
+                    time:
+                      format: "date-time"
+                      type: "string"
+                  required:
+                    - "element_in"
+                    - "element_in_cost"
+                    - "element_out"
+                    - "element_out_cost"
+                    - "entry"
+                    - "event"
+                    - "time"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  detail:
+                    type: "string"
+                required:
+                  - "detail"
+      security:
+        - session: []
+      parameters:
+        - name: "manager_id"
           in: "path"
           required: true
           schema:
@@ -964,6 +1056,71 @@ paths:
           required: true
           schema:
             type: "integer"
+  /regions/:
+    get:
+      operationId: "getRegions"
+      summary: "Get regions"
+      description: "Returns the countries and regions used for manager profiles and regional leagues."
+      tags:
+        - "General"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "integer"
+                    name:
+                      type: "string"
+                    code:
+                      type: "integer"
+                    iso_code_short:
+                      type: "string"
+                    iso_code_long:
+                      type: "string"
+                  required:
+                    - "id"
+                    - "name"
+                    - "code"
+                    - "iso_code_short"
+                    - "iso_code_long"
+  /dream-team/:
+    get:
+      operationId: "getSeasonDreamTeam"
+      summary: "Get season dream team"
+      description: "Returns the highest-scoring valid team across the season to date."
+      tags:
+        - "Stats"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  top_player:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "integer"
+                      points:
+                        type: "integer"
+                    required:
+                      - "id"
+                      - "points"
+                  team:
+                    type: "array"
+                    items:
+                      $ref: "#/components/schemas/GetSeasonDreamTeamResponse200Team"
+                required:
+                  - "top_player"
+                  - "team"
   /team/set-piece-notes/:
     get:
       operationId: "getSetPieceNotes"
@@ -2491,6 +2648,19 @@ components:
         - "start_event"
         - "stop_event"
         - "chip_type"
+    GetSeasonDreamTeamResponse200Team:
+      type: "object"
+      properties:
+        element:
+          type: "integer"
+        points:
+          type: "integer"
+        position:
+          type: "integer"
+      required:
+        - "element"
+        - "points"
+        - "position"
     GetSetPieceNotesResponse200TeamNote:
       type: "object"
       properties:

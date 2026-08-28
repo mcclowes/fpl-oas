@@ -26,6 +26,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dream-team/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get season dream team
+         * @description Returns the highest-scoring valid team across the season to date.
+         */
+        get: operations["getSeasonDreamTeam"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dream-team/{event_id}/": {
         parameters: {
             query?: never;
@@ -118,6 +138,28 @@ export interface paths {
          * @description Returns a manager's historical performance data including gameweek scores, chip usage, and previous season rankings.
          */
         get: operations["getEntryHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/entry/{manager_id}/transfers-latest/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get latest manager transfers
+         * @description Returns transfers made by the authenticated manager in the current gameweek.
+         *
+         *     **Requires authentication via FPL session cookie. The manager ID must belong to the authenticated user.**
+         */
+        get: operations["getEntryTransfersLatest"];
         put?: never;
         post?: never;
         delete?: never;
@@ -302,6 +344,46 @@ export interface paths {
          *     **Requires authentication via FPL session cookie.**
          */
         get: operations["getMyTeam"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/regions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get regions
+         * @description Returns the countries and regions used for manager profiles and regional leagues.
+         */
+        get: operations["getRegions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stats/best-classic-private-leagues/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get best classic private leagues
+         * @description Returns the highest-scoring private classic leagues, ranked by average score.
+         */
+        get: operations["getBestClassicPrivateLeagues"];
         put?: never;
         post?: never;
         delete?: never;
@@ -703,6 +785,11 @@ export interface components {
             purchase_price: number;
             selling_price: number;
         };
+        GetSeasonDreamTeamResponse200Team: {
+            element: number;
+            points: number;
+            position: number;
+        };
         GetSetPieceNotesResponse200Team: {
             id: number;
             notes: components["schemas"]["GetSetPieceNotesResponse200TeamNote"][];
@@ -987,6 +1074,32 @@ export interface operations {
             };
         };
     };
+    getSeasonDreamTeam: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        team: components["schemas"]["GetSeasonDreamTeamResponse200Team"][];
+                        top_player: {
+                            id: number;
+                            points: number;
+                        };
+                    };
+                };
+            };
+        };
+    };
     getDreamTeam: {
         parameters: {
             query?: never;
@@ -1190,6 +1303,48 @@ export interface operations {
                         chips: components["schemas"]["GetEntryHistoryResponse200Chip"][];
                         current: components["schemas"]["GetEntryHistoryResponse200Current"][];
                         past: components["schemas"]["GetEntryHistoryResponse200Past"][];
+                    };
+                };
+            };
+        };
+    };
+    getEntryTransfersLatest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                manager_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        element_in: number;
+                        element_in_cost: number;
+                        element_out: number;
+                        element_out_cost: number;
+                        entry: number;
+                        event: number;
+                        /** Format: date-time */
+                        time: string;
+                    }[];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        detail: string;
                     };
                 };
             };
@@ -1558,6 +1713,57 @@ export interface operations {
                     "application/json": {
                         detail: string;
                     };
+                };
+            };
+        };
+    };
+    getRegions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: number;
+                        id: number;
+                        iso_code_long: string;
+                        iso_code_short: string;
+                        name: string;
+                    }[];
+                };
+            };
+        };
+    };
+    getBestClassicPrivateLeagues: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        average_score: string;
+                        entries: number;
+                        league: number;
+                        name: string;
+                    }[];
                 };
             };
         };
