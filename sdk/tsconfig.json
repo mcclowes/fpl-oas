@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "strict": true,
     "target": "ES2022",
-    "types": []
+    "types": [],
+    "skipLibCheck": true
   },
   "include": ["src"]
 }
