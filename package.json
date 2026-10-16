@@ -43,11 +43,6 @@
     "react-dom": "^19.1.1"
   },
   "_comment_overrides": "ajv 8.18+ generates code that Docusaurus's jiti module loader mis-parses, so loading the Speccy plugin (which pulls in Spectral) throws at config time. Pin Spectral's ajv until jiti handles it.",
-  "overrides": {
-    "@stoplight/spectral-core": { "ajv": "8.17.1" },
-    "@stoplight/spectral-functions": { "ajv": "8.17.1" },
-    "@stoplight/spectral-rulesets": { "ajv": "8.17.1" }
-  },
   "keywords": [
     "fpl",
     "fantasy-premier-league",
@@ -63,6 +58,30 @@
   "homepage": "https://github.com/mcclowes/fpl-oas#readme",
   "bugs": {
     "url": "https://github.com/mcclowes/fpl-oas/issues"
+  },
+  "overrides": {
+    "@stoplight/spectral-core": {
+      "ajv": "8.20.0"
+    },
+    "@stoplight/spectral-functions": {
+      "ajv": "8.20.0"
+    },
+    "@stoplight/spectral-rulesets": {
+      "ajv": "8.20.0"
+    },
+    "@docusaurus/core": {
+      "tinypool": "2.1.2"
+    },
+    "copy-webpack-plugin": {
+      "serialize-javascript": "7.1.2"
+    },
+    "css-minimizer-webpack-plugin": {
+      "serialize-javascript": "7.1.2"
+    },
+    "sockjs": {
+      "uuid": "11.1.1"
+    },
+    "postcss-selector-parser": "^7.1.6"
   },
   "engines": {
     "node": ">=20.0"
